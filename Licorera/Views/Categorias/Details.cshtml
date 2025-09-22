@@ -1,25 +1,96 @@
 ﻿@model Licorera.Models.Categoria
 
 @{
-    ViewData["Title"] = "Details";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Detalles de Categoría";
 }
 
-<h1>Details</h1>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Categorías</a></li>
+                <li class="breadcrumb-item active">Detalles</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-2">Detalles de Categoría</h1>
+        <p class="text-muted">Información detallada de la categoría</p>
+    </div>
 
-<div>
-    <h4>Categoria</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.CategoriaId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <!-- Details Card -->
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Nombre de la Categoría</h6>
+                        <p class="h5">@Html.DisplayFor(model => model.Nombre)</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">ID de la Categoría</h6>
+                        <p class="h5">#@Html.DisplayFor(model => model.CategoriaId)</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Productos Asociados</h6>
+                        <p class="h5">@(Model.Productos?.Count ?? 0) productos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a asp-action="Index" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model?.CategoriaId" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Productos != null && Model.Productos.Any())
+    {
+        <!-- Products Table -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Productos en esta Categoría</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var producto in Model.Productos)
+                            {
+                                <tr>
+                                    <td>@producto.Nombre</td>
+                                    <td>$@producto.Precio.ToString("N2")</td>
+                                    <td>@producto.Stock</td>
+                                    <td>
+                                        @if (producto.Stock > 0)
+                                        {
+                                            <span class="status-tag completed">En Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-tag pending">Agotado</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
 </div>

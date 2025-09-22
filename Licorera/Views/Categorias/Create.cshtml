@@ -1,32 +1,50 @@
 ﻿@model Licorera.Models.Categoria
 
 @{
-    ViewData["Title"] = "Create";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Nueva Categoría";
 }
 
-<h1>Create</h1>
-
-<h4>Categoria</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Categorías</a></li>
+                <li class="breadcrumb-item active">Nueva Categoría</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-2">Crear Nueva Categoría</h1>
+        <p class="text-muted">Complete el formulario para crear una nueva categoría</p>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+    <!-- Form Card -->
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label">Nombre de la Categoría</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-tag"></i>
+                        </span>
+                        <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre de la categoría" />
+                    </div>
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
