@@ -1,60 +1,97 @@
 ﻿@model IEnumerable<Licorera.Models.Usuario>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Usuarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-users me-2"></i>Gestión de Usuarios</h1>
+        <p>Administra los usuarios del sistema</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Rol)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rol.RolId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.UsuarioId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.UsuarioId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.UsuarioId">Delete</a>
-            </td>
-        </tr>
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-user me-2"></i>Usuario</th>
+                    <th><i class="fas fa-envelope me-2"></i>@Html.DisplayNameFor(model => model.Email)</th>
+                    <th><i class="fas fa-shield-alt me-2"></i>@Html.DisplayNameFor(model => model.Rol)</th>
+                    <th><i class="fas fa-calendar me-2"></i>@Html.DisplayNameFor(model => model.CreatedAt)</th>
+                    <th width="120" class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div>
+                                    <strong>@Html.DisplayFor(modelItem => item.Nombre)</strong>
+                                    <small class="text-muted d-block">ID: @item.UsuarioId</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-envelope text-muted me-2"></i>
+                                @Html.DisplayFor(modelItem => item.Email)
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge active">
+                                @Html.DisplayFor(modelItem => item.Rol.Nombre)
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar text-muted me-2"></i>
+                                @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@item.UsuarioId" 
+                                   class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.UsuarioId" 
+                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.UsuarioId" 
+                                   class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5">
+        <div class="mb-3">
+            <i class="fas fa-users text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">No hay usuarios registrados</h4>
+        <p class="text-muted">Comienza creando tu primer usuario</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Crear Primer Usuario
+        </a>
+    </div>
 }
-    </tbody>
-</table>

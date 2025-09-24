@@ -1,0 +1,530 @@
+@model IEnumerable<Licorera.Models.Usuario>
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var activeTab = ViewBag.ActiveTab ?? "usuarios";
+    var roles = ViewBag.Roles as List<Licorera.Models.Role>;
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-users-cog me-2"></i>Gestión de Usuarios</h1>
+        <p>Administra usuarios, roles y permisos del sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary me-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Total Usuarios</h6>
+                        <h4 class="mb-0">@ViewBag.TotalUsuarios</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-success me-3">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Vendedores</h6>
+                        <h4 class="mb-0">@ViewBag.TotalVendedores</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-info me-3">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Clientes</h6>
+                        <h4 class="mb-0">@ViewBag.TotalClientes</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-warning me-3">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Administradores</h6>
+                        <h4 class="mb-0">@ViewBag.TotalAdmins</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navegación por tabs -->
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="usuariosTabs">
+            <li class="nav-item">
+                <a class="nav-link @(activeTab == "usuarios" ? "active" : "")" 
+                   href="@Url.Action("Index", new { tab = "usuarios" })">
+                    <i class="fas fa-users me-2"></i>Lista de Usuarios
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(activeTab == "permisos" ? "active" : "")" 
+                   href="@Url.Action("Index", new { tab = "permisos" })">
+                    <i class="fas fa-user-shield me-2"></i>Gestión de Permisos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(activeTab == "roles" ? "active" : "")" 
+                   href="@Url.Action("Index", new { tab = "roles" })">
+                    <i class="fas fa-tags me-2"></i>Roles del Sistema
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="card-body">
+        <!-- Tab de Lista de Usuarios -->
+        @if (activeTab == "usuarios")
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                            <th><i class="fas fa-user me-2"></i>Usuario</th>
+                            <th><i class="fas fa-envelope me-2"></i>Email</th>
+                            <th><i class="fas fa-shield-alt me-2"></i>Rol</th>
+                            <th><i class="fas fa-calendar me-2"></i>Registro</th>
+                            <th width="200" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">#@usuario.UsuarioId</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                            @switch (usuario.Rol.Nombre)
+                                            {
+                                                case "Admin":
+                                                    <i class="fas fa-crown text-warning"></i>
+                                                    break;
+                                                case "Vendedor":
+                                                    <i class="fas fa-user-tie text-info"></i>
+                                                    break;
+                                                default:
+                                                    <i class="fas fa-user-circle text-secondary"></i>
+                                                    break;
+                                            }
+                                        </div>
+                                        <div>
+                                            <strong>@usuario.Nombre</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-envelope text-muted me-2"></i>
+                                        @usuario.Email
+                                    </div>
+                                </td>
+                                <td>
+                                    @{ 
+                                        var badgeClass = usuario.Rol.Nombre switch
+                                        {
+                                            "Admin" => "bg-warning",
+                                            "Vendedor" => "bg-success",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">
+                                        @usuario.Rol.Nombre
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar text-muted me-2"></i>
+                                        @(usuario.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@usuario.UsuarioId" 
+                                           class="btn btn-outline-info btn-sm" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (usuario.Rol.Nombre != "Admin")
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@usuario.UsuarioId" 
+                                               class="btn btn-outline-primary btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@usuario.UsuarioId" 
+                                               class="btn btn-outline-danger btn-sm" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        
+        <!-- Tab de Gestión de Permisos -->
+        @if (activeTab == "permisos")
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Gestión de Permisos:</strong> Asigna y gestiona permisos de vendedor para los usuarios.
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-user me-2"></i>Usuario</th>
+                            <th><i class="fas fa-envelope me-2"></i>Email</th>
+                            <th><i class="fas fa-shield-alt me-2"></i>Rol Actual</th>
+                            <th><i class="fas fa-calendar me-2"></i>Fecha Registro</th>
+                            <th width="250" class="text-center">Acciones de Permisos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model.Where(u => u.Rol.Nombre != "Admin"))
+                        {
+                            <tr data-usuario-id="@usuario.UsuarioId">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                            @if (usuario.Rol.Nombre == "Vendedor")
+                                            {
+                                                <i class="fas fa-user-tie text-info"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-user-circle text-secondary"></i>
+                                            }
+                                        </div>
+                                        <div>
+                                            <strong>@usuario.Nombre</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@usuario.Email</td>
+                                <td>
+                                    <span class="role-badge @(usuario.Rol.Nombre == "Vendedor" ? "status-badge active" : "status-badge pending")" 
+                                          id="role-badge-@usuario.UsuarioId">
+                                        @if (usuario.Rol.Nombre == "Vendedor")
+                                        {
+                                            <i class="fas fa-user-tie me-1"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-user me-1"></i>
+                                        }
+                                        @usuario.Rol.Nombre
+                                    </span>
+                                </td>
+                                <td>@(usuario.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        @if (usuario.Rol.Nombre != "Vendedor")
+                                        {
+                                            <button class="btn btn-success btn-sm btn-asignar-vendedor" 
+                                                    data-usuario-id="@usuario.UsuarioId"
+                                                    data-usuario-nombre="@usuario.Nombre">
+                                                <i class="fas fa-user-plus me-1"></i>Hacer Vendedor
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-warning btn-sm btn-revocar-vendedor" 
+                                                    data-usuario-id="@usuario.UsuarioId"
+                                                    data-usuario-nombre="@usuario.Nombre">
+                                                <i class="fas fa-user-minus me-1"></i>Revocar Vendedor
+                                            </button>
+                                        }
+                                        
+                                        <button class="btn btn-outline-primary btn-sm btn-cambiar-rol" 
+                                                data-usuario-id="@usuario.UsuarioId"
+                                                data-usuario-nombre="@usuario.Nombre"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalCambiarRol">
+                                            <i class="fas fa-edit me-1"></i>Cambiar Rol
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        
+        <!-- Tab de Roles -->
+        @if (activeTab == "roles")
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Nota:</strong> Los roles del sistema son predefinidos y no se pueden modificar desde esta interfaz.
+            </div>
+            
+            <div class="row">
+                @foreach (var rol in roles)
+                {
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="icon-wrapper mb-3" style="width: 60px; height: 60px; margin: 0 auto;">
+                                    @switch (rol.Nombre)
+                                    {
+                                        case "Admin":
+                                            <i class="fas fa-crown text-warning"></i>
+                                            break;
+                                        case "Vendedor":
+                                            <i class="fas fa-user-tie text-info"></i>
+                                            break;
+                                        default:
+                                            <i class="fas fa-user-circle text-secondary"></i>
+                                            break;
+                                    }
+                                </div>
+                                <h5 class="card-title">@rol.Nombre</h5>
+                                <p class="card-text text-muted">
+                                    @switch (rol.Nombre)
+                                    {
+                                        case "Admin":
+                                            <text>Acceso completo al sistema</text>
+                                            break;
+                                        case "Vendedor":
+                                            <text>Gestión de ventas y productos</text>
+                                            break;
+                                        default:
+                                            <text>Acceso a catálogo y compras</text>
+                                            break;
+                                    }
+                                </p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary">
+                                        @Model.Count(u => u.RolId == rol.RolId) usuarios
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <div class="text-center mt-5">
+                <div class="mb-3">
+                    <i class="fas fa-users text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="text-muted">No hay usuarios para gestionar</h4>
+                <p class="text-muted">Los usuarios aparecerán aquí cuando se registren</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para Cambiar Rol -->
+<div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalCambiarRolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCambiarRolLabel">
+                    <i class="fas fa-user-edit me-2"></i>Cambiar Rol de Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCambiarRol">
+                    <input type="hidden" id="usuarioIdModal" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Usuario:</label>
+                        <div class="alert alert-info">
+                            <i class="fas fa-user me-2"></i>
+                            <strong id="nombreUsuarioModal"></strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nuevoRol" class="form-label">Nuevo Rol:</label>
+                        <select class="form-select" id="nuevoRol" required>
+                            <option value="">Seleccionar rol...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Advertencia:</strong> Esta acción cambiará los permisos del usuario en el sistema.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarCambio">
+                    <i class="fas fa-save me-2"></i>Cambiar Rol
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Asignar Vendedor
+            $('.btn-asignar-vendedor').click(function() {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).data('usuario-nombre');
+                
+                if (confirm(`¿Estás seguro de que quieres hacer a ${usuarioNombre} un Vendedor? Tendrá acceso a la gestión de ventas.`)) {
+                    asignarVendedor(usuarioId);
+                }
+            });
+            
+            // Revocar Vendedor
+            $('.btn-revocar-vendedor').click(function() {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).data('usuario-nombre');
+                
+                if (confirm(`¿Estás seguro de que quieres revocar los permisos de Vendedor a ${usuarioNombre}? Volverá a ser Cliente.`)) {
+                    revocarVendedor(usuarioId);
+                }
+            });
+            
+            // Abrir modal para cambiar rol
+            $('.btn-cambiar-rol').click(function() {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).data('usuario-nombre');
+                
+                $('#usuarioIdModal').val(usuarioId);
+                $('#nombreUsuarioModal').text(usuarioNombre);
+                
+                // Cargar roles disponibles
+                cargarRoles(usuarioId);
+            });
+            
+            // Confirmar cambio de rol
+            $('#btnConfirmarCambio').click(function() {
+                const usuarioId = $('#usuarioIdModal').val();
+                const nuevoRolId = $('#nuevoRol').val();
+                
+                if (!nuevoRolId) {
+                    toastr.warning('Debes seleccionar un rol');
+                    return;
+                }
+                
+                cambiarRol(usuarioId, nuevoRolId);
+            });
+        });
+        
+        function asignarVendedor(usuarioId) {
+            $.ajax({
+                url: '@Url.Action("AsignarVendedor", "Permisos")',
+                type: 'POST',
+                data: { usuarioId: usuarioId },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al asignar el rol de vendedor');
+                }
+            });
+        }
+        
+        function revocarVendedor(usuarioId) {
+            $.ajax({
+                url: '@Url.Action("RevocarVendedor", "Permisos")',
+                type: 'POST',
+                data: { usuarioId: usuarioId },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al revocar el rol de vendedor');
+                }
+            });
+        }
+        
+        function cargarRoles(usuarioId) {
+            // Limpiar y cargar opciones de roles
+            const selectRol = $('#nuevoRol');
+            selectRol.empty().append('<option value="">Seleccionar rol...</option>');
+            
+            // Agregar roles disponibles (excluyendo Admin)
+            selectRol.append('<option value="2">Cliente</option>');
+            selectRol.append('<option value="3">Vendedor</option>');
+        }
+        
+        function cambiarRol(usuarioId, nuevoRolId) {
+            $.ajax({
+                url: '@Url.Action("CambiarRol", "Permisos")',
+                type: 'POST',
+                data: { 
+                    usuarioId: usuarioId, 
+                    nuevoRolId: nuevoRolId 
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $('#modalCambiarRol').modal('hide');
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al cambiar el rol del usuario');
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,94 @@
+@model Licorera.Models.Usuario
+
+@{
+    ViewData["Title"] = "Eliminar Usuario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-user-times me-2 text-danger"></i>Eliminar Usuario</h1>
+        <p>Confirma la eliminación del usuario</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>¿Estás seguro de que quieres eliminar este usuario?
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>¡Acción Irreversible!
+                    </h4>
+                    <p>Esta acción eliminará permanentemente el usuario y no se puede deshacer. Considera las siguientes consecuencias:</p>
+                    <hr>
+                    <ul class="mb-0">
+                        <li>Se perderá toda la información del usuario</li>
+                        <li>El historial de actividad se mantendrá por integridad de datos</li>
+                        <li>El usuario no podrá acceder al sistema</li>
+                    </ul>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información del Usuario a Eliminar:</h6>
+                        <dl class="row">
+                            <dt class="col-sm-4">ID:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-primary">#@Model.UsuarioId</span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Nombre</strong></dd>
+                            
+                            <dt class="col-sm-4">Email:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+                            
+                            <dt class="col-sm-4">Rol:</dt>
+                            <dd class="col-sm-8">
+                                @{
+                                    var badgeClass = Model.Rol.Nombre switch
+                                    {
+                                        "Admin" => "bg-warning text-dark",
+                                        "Vendedor" => "bg-success",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@Model.Rol.Nombre</span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Registro:</dt>
+                            <dd class="col-sm-8">@(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <i class="fas fa-user-times text-danger" style="font-size: 5rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <form asp-action="Delete" method="post" class="mt-4">
+                    <input type="hidden" asp-for="UsuarioId" />
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('¿Estás completamente seguro? Esta acción no se puede deshacer.')">
+                            <i class="fas fa-trash me-2"></i>Sí, Eliminar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

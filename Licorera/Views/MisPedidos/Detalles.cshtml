@@ -1,0 +1,317 @@
+@model Licorera.Models.Pedido
+
+@{
+    ViewData["Title"] = $"Pedido #{Model.PedidoId}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-receipt me-2"></i>Pedido #@Model.PedidoId</h1>
+        <p>Detalles completos de tu pedido</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a Mis Pedidos
+    </a>
+</div>
+
+<div class="row">
+    <!-- Información del Pedido -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información del Pedido
+                </h5>
+                @{
+                    var estadoClass = "";
+                    var estadoIcon = "";
+                    switch (Model.Estado?.ToLower())
+                    {
+                        case "completado":
+                            estadoClass = "status-badge active";
+                            estadoIcon = "fas fa-check-circle";
+                            break;
+                        case "pendiente":
+                            estadoClass = "status-badge pending";
+                            estadoIcon = "fas fa-clock";
+                            break;
+                        case "en proceso":
+                            estadoClass = "status-badge pending";
+                            estadoIcon = "fas fa-cog fa-spin";
+                            break;
+                        case "enviado":
+                            estadoClass = "status-badge active";
+                            estadoIcon = "fas fa-truck";
+                            break;
+                        case "cancelado":
+                            estadoClass = "status-badge inactive";
+                            estadoIcon = "fas fa-times-circle";
+                            break;
+                        default:
+                            estadoClass = "status-badge pending";
+                            estadoIcon = "fas fa-question-circle";
+                            break;
+                    }
+                }
+                <span class="@estadoClass">
+                    <i class="@estadoIcon me-1"></i>
+                    @(Model.Estado ?? "N/A")
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <div class="detail-label">Fecha del Pedido</div>
+                            <div class="detail-value">
+                                <i class="fas fa-calendar text-muted me-2"></i>
+                                @Model.Fecha?.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <div class="detail-label">Número de Pedido</div>
+                            <div class="detail-value">
+                                <i class="fas fa-hashtag text-muted me-2"></i>
+                                @Model.PedidoId
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <div class="detail-label">Cliente</div>
+                            <div class="detail-value">
+                                <i class="fas fa-user text-muted me-2"></i>
+                                @Model.Cliente?.Nombre
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <div class="detail-label">Dirección de Envío</div>
+                            <div class="detail-value">
+                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                @Model.Cliente?.Direccion
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Productos del Pedido -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-bag me-2"></i>Productos Pedidos
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio Unitario</th>
+                                <th>Cantidad</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detalle in Model.DetallePedidos)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-wine-glass"></i>
+                                            </div>
+                                            <div>
+                                                <strong>@detalle.Producto?.Nombre</strong>
+                                                @if (!string.IsNullOrEmpty(detalle.Producto?.Descripcion))
+                                                {
+                                                    <small class="text-muted d-block">
+                                                        @(detalle.Producto.Descripcion.Length > 50 ? 
+                                                          detalle.Producto.Descripcion.Substring(0, 50) + "..." : 
+                                                          detalle.Producto.Descripcion)
+                                                    </small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (detalle.Producto?.Categoria != null)
+                                        {
+                                            <span class="badge bg-secondary">@detalle.Producto.Categoria.Nombre</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-dollar-sign text-success me-2"></i>
+                                            <span class="text-success">$@detalle.PrecioUnitario.ToString("N0")</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-sort-numeric-up text-muted me-2"></i>
+                                            <strong>@detalle.Cantidad unidades</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-calculator text-primary me-2"></i>
+                                            <strong class="text-primary">$@((detalle.Cantidad * detalle.PrecioUnitario).ToString("N0"))</strong>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumen y Acciones -->
+    <div class="col-md-4">
+        <!-- Resumen del Pedido -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>Resumen del Pedido
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>$@Model.DetallePedidos.Sum(d => d.Cantidad * d.PrecioUnitario).ToString("N0")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Envío:</span>
+                    <span>$0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Descuentos:</span>
+                    <span class="text-success">$0</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <strong class="text-primary h5">$@Model.Total.ToString("N0")</strong>
+                </div>
+                
+                <!-- Acciones según el estado -->
+                @if (Model.Estado == "Pendiente")
+                {
+                    <button class="btn btn-danger w-100 mb-2 btn-cancelar-pedido" 
+                            data-pedido-id="@Model.PedidoId">
+                        <i class="fas fa-times me-2"></i>Cancelar Pedido
+                    </button>
+                }
+                
+                @if (Model.Estado == "Completado")
+                {
+                    <button class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-redo me-2"></i>Reordenar
+                    </button>
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="fas fa-download me-2"></i>Descargar Factura
+                    </button>
+                }
+            </div>
+        </div>
+        
+        <!-- Estado del Envío -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-truck me-2"></i>Estado del Envío
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item @(Model.Estado != "Cancelado" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>Pedido Recibido</strong>
+                            <div class="text-muted small">@Model.Fecha?.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item @(Model.Estado == "En Proceso" || Model.Estado == "Enviado" || Model.Estado == "Completado" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>En Preparación</strong>
+                            <div class="text-muted small">
+                                @(Model.Estado == "En Proceso" || Model.Estado == "Enviado" || Model.Estado == "Completado" ? 
+                                  "Procesando tu pedido" : "Pendiente")
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item @(Model.Estado == "Enviado" || Model.Estado == "Completado" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>Enviado</strong>
+                            <div class="text-muted small">
+                                @(Model.Estado == "Enviado" || Model.Estado == "Completado" ? 
+                                  "En camino a tu dirección" : "Pendiente")
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item @(Model.Estado == "Completado" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>Entregado</strong>
+                            <div class="text-muted small">
+                                @(Model.Estado == "Completado" ? "Pedido completado" : "Pendiente")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.btn-cancelar-pedido').click(function() {
+                var pedidoId = $(this).data('pedido-id');
+                
+                if (confirm('¿Estás seguro de que quieres cancelar este pedido?')) {
+                    $.ajax({
+                        url: '@Url.Action("CancelarPedido", "MisPedidos")',
+                        type: 'POST',
+                        data: { id: pedidoId },
+                        success: function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function() {
+                            toastr.error('Error al cancelar el pedido');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

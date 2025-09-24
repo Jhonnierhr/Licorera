@@ -1,54 +1,346 @@
 ﻿@model IEnumerable<Licorera.Models.Pedido>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Pedidos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-clipboard-list me-2"></i>Gestión de Pedidos</h1>
+        <p>Administra y supervisa todos los pedidos del sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nuevo Pedido
+        </a>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Cliente)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Cliente.ClienteId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PedidoId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PedidoId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PedidoId">Delete</a>
-            </td>
-        </tr>
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Total Pedidos</div>
+                        <div class="h3 font-weight-bold">@ViewBag.TotalPedidos</div>
+                    </div>
+                    <div class="h2">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Pendientes</div>
+                        <div class="h3 font-weight-bold">@ViewBag.PedidosPendientes</div>
+                    </div>
+                    <div class="h2">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Completados</div>
+                        <div class="h3 font-weight-bold">@ViewBag.PedidosCompletados</div>
+                    </div>
+                    <div class="h2">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Ventas Hoy</div>
+                        <div class="h3 font-weight-bold">$@(ViewBag.VentasHoy?.ToString("N0") ?? "0")</div>
+                    </div>
+                    <div class="h2">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Filtros y Búsqueda
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="filtroEstado">Estado:</label>
+                    <select id="filtroEstado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="buscarCliente">Buscar Cliente:</label>
+                    <input type="text" id="buscarCliente" class="form-control" placeholder="Nombre o email del cliente">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="fechaDesde">Fecha desde:</label>
+                    <input type="date" id="fechaDesde" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Pedidos -->
+<div class="card">
+    <div class="card-header">
+        <h6 class="card-title mb-0">
+            <i class="fas fa-list me-2"></i>Lista de Pedidos
+        </h6>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover" id="pedidosTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                            <th><i class="fas fa-user me-1"></i>Cliente</th>
+                            <th><i class="fas fa-calendar me-1"></i>Fecha</th>
+                            <th><i class="fas fa-box me-1"></i>Productos</th>
+                            <th><i class="fas fa-dollar-sign me-1"></i>Total</th>
+                            <th><i class="fas fa-info-circle me-1"></i>Estado</th>
+                            <th width="200" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pedido in Model)
+                        {
+                            <tr data-pedido-id="@pedido.PedidoId">
+                                <td>
+                                    <span class="badge bg-primary">#@pedido.PedidoId</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-wrapper me-2" style="width: 35px; height: 35px;">
+                                            <i class="fas fa-user-circle text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@pedido.Cliente?.Nombre</strong>
+                                            <br><small class="text-muted">@pedido.Cliente?.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar text-muted me-2"></i>
+                                        <div>
+                                            <div>@pedido.Fecha?.ToString("dd/MM/yyyy")</div>
+                                            <small class="text-muted">@pedido.Fecha?.ToString("HH:mm")</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-box text-muted me-2"></i>
+                                        <span>@pedido.DetallePedidos.Count items</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="h6 text-success mb-0">$@pedido.Total.ToString("N0")</div>
+                                </td>
+                                <td>
+                                    @{
+                                        var estadoClass = pedido.Estado?.ToLower() switch
+                                        {
+                                            "completado" => "badge bg-success",
+                                            "pendiente" => "badge bg-warning text-dark",
+                                            "en proceso" => "badge bg-info",
+                                            "enviado" => "badge bg-primary",
+                                            "cancelado" => "badge bg-danger",
+                                            _ => "badge bg-secondary"
+                                        };
+
+                                        var estadoIcon = pedido.Estado?.ToLower() switch
+                                        {
+                                            "completado" => "fas fa-check-circle",
+                                            "pendiente" => "fas fa-clock",
+                                            "en proceso" => "fas fa-cog fa-spin",
+                                            "enviado" => "fas fa-truck",
+                                            "cancelado" => "fas fa-times-circle",
+                                            _ => "fas fa-question-circle"
+                                        };
+                                    }
+                                    
+                                    <div class="dropdown">
+                                        <button class="@estadoClass dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="@estadoIcon me-1"></i>@pedido.Estado
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @if (pedido.Estado != "Pendiente")
+                                            {
+                                                <li><a class="dropdown-item" href="#" onclick="actualizarEstado(@pedido.PedidoId, 'Pendiente')">
+                                                    <i class="fas fa-clock me-2"></i>Pendiente
+                                                </a></li>
+                                            }
+                                            @if (pedido.Estado != "En Proceso")
+                                            {
+                                                <li><a class="dropdown-item" href="#" onclick="actualizarEstado(@pedido.PedidoId, 'En Proceso')">
+                                                    <i class="fas fa-cog me-2"></i>En Proceso
+                                                </a></li>
+                                            }
+                                            @if (pedido.Estado != "Enviado")
+                                            {
+                                                <li><a class="dropdown-item" href="#" onclick="actualizarEstado(@pedido.PedidoId, 'Enviado')">
+                                                    <i class="fas fa-truck me-2"></i>Enviado
+                                                </a></li>
+                                            }
+                                            @if (pedido.Estado != "Completado")
+                                            {
+                                                <li><a class="dropdown-item" href="#" onclick="actualizarEstado(@pedido.PedidoId, 'Completado')">
+                                                    <i class="fas fa-check-circle me-2"></i>Completado
+                                                </a></li>
+                                            }
+                                            @if (pedido.Estado != "Cancelado")
+                                            {
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="actualizarEstado(@pedido.PedidoId, 'Cancelado')">
+                                                    <i class="fas fa-times-circle me-2"></i>Cancelar
+                                                </a></li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@pedido.PedidoId" 
+                                           class="btn btn-outline-info btn-sm" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@pedido.PedidoId" 
+                                           class="btn btn-outline-primary btn-sm" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@pedido.PedidoId" 
+                                           class="btn btn-outline-danger btn-sm" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-5">
+                <div class="mb-3">
+                    <i class="fas fa-clipboard-list text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="text-muted">No hay pedidos registrados</h4>
+                <p class="text-muted">Los pedidos aparecerán aquí cuando los clientes realicen compras</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Crear Primer Pedido
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filtros en tiempo real
+            $('#filtroEstado, #buscarCliente, #fechaDesde').on('change keyup', function() {
+                filtrarPedidos();
+            });
+        });
+
+        function filtrarPedidos() {
+            const filtroEstado = $('#filtroEstado').val().toLowerCase();
+            const buscarCliente = $('#buscarCliente').val().toLowerCase();
+            const fechaDesde = $('#fechaDesde').val();
+            
+            $('#pedidosTable tbody tr').each(function() {
+                const fila = $(this);
+                let mostrar = true;
+                
+                // Filtrar por estado
+                if (filtroEstado && !fila.find('.dropdown-toggle').text().toLowerCase().includes(filtroEstado)) {
+                    mostrar = false;
+                }
+                
+                // Filtrar por cliente
+                if (buscarCliente && !fila.find('td:nth-child(2)').text().toLowerCase().includes(buscarCliente)) {
+                    mostrar = false;
+                }
+                
+                // Mostrar u ocultar fila
+                fila.toggle(mostrar);
+            });
+        }
+
+        function actualizarEstado(pedidoId, nuevoEstado) {
+            if (nuevoEstado === 'Cancelado') {
+                if (!confirm('¿Estás seguro de que quieres cancelar este pedido?')) {
+                    return;
+                }
+            }
+            
+            $.ajax({
+                url: '@Url.Action("ActualizarEstado")',
+                type: 'POST',
+                data: {
+                    pedidoId: pedidoId,
+                    nuevoEstado: nuevoEstado
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        // Recargar la página para reflejar los cambios
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al actualizar el estado del pedido');
+                }
+            });
+        }
+    </script>
 }
-    </tbody>
-</table>

@@ -5,49 +5,76 @@
 }
 
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="mb-4">
+    <!-- Page Header -->
+    <div class="page-header">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-action="Index">Categorías</a></li>
                 <li class="breadcrumb-item active">Editar Categoría</li>
             </ol>
+            <h1>Editar Categoría</h1>
+            <p class="text-muted">Modifique los datos de la categoría</p>
         </nav>
-        <h1 class="h3 mb-2">Editar Categoría</h1>
-        <p class="text-muted">Modifique los datos de la categoría</p>
     </div>
 
     <!-- Form Card -->
-    <div class="card">
-        <div class="card-body">
-            <form asp-action="Edit">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                <input type="hidden" asp-for="CategoriaId" />
-                
-                <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label">Nombre de la Categoría</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-tag"></i>
-                        </span>
-                        <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre de la categoría" />
-                    </div>
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="CategoriaId" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Nombre" class="form-label">Nombre de la Categoría</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-tag"></i>
+                                </span>
+                                <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre de la categoría" />
+                            </div>
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                            <small class="form-text text-muted">El nombre debe ser único y descriptivo.</small>
+                        </div>
 
-                <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-light">
-                        <i class="fas fa-times me-2"></i>Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Guardar Cambios
-                    </button>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
+        </div>
+        
+        <!-- Info Card -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Información</h5>
+                </div>
+                <div class="card-body">
+                    <div class="detail-group">
+                        <div class="detail-label">ID de Categoría</div>
+                        <div class="detail-value">#@Model.CategoriaId</div>
+                    </div>
+                    <hr>
+                    <h6>Notas:</h6>
+                    <ul class="text-muted">
+                        <li>Los cambios afectarán a todos los productos asociados</li>
+                        <li>El nombre debe ser único en el sistema</li>
+                        <li>No se pueden eliminar categorías con productos asociados</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{await Html.PartialAsync("_ValidationScriptsPartial");}
 }

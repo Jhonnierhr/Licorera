@@ -1,42 +1,364 @@
 ﻿@model Licorera.Models.Compra
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nueva Compra";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Create</h1>
+@{
+    var proveedores = ViewBag.Proveedores as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>;
+    var productos = ViewBag.Productos as List<Licorera.Models.Producto>;
+}
 
-<h4>Compra</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ProveedorId" class="control-label"></label>
-                <select asp-for="ProveedorId" class ="form-control" asp-items="ViewBag.ProveedorId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="UsuarioId" class="control-label"></label>
-                <select asp-for="UsuarioId" class ="form-control" asp-items="ViewBag.UsuarioId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-plus me-2"></i>Nueva Compra</h1>
+        <p>Registra una nueva compra a proveedor</p>
     </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a Lista
+    </a>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<form id="formCompra" method="post" asp-action="Create">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Información General -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información General
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="proveedorId" class="form-label">
+                                    <i class="fas fa-truck me-2"></i>Proveedor <span class="text-danger">*</span>
+                                </label>
+                                <select name="proveedorId" id="proveedorId" class="form-select" required>
+                                    <option value="">Seleccionar proveedor...</option>
+                                    @if (proveedores != null)
+                                    {
+                                        @foreach (var proveedor in proveedores)
+                                        {
+                                            <option value="@proveedor.Value">@proveedor.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="invalid-feedback">
+                                    Debe seleccionar un proveedor
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>Fecha
+                                </label>
+                                <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selección de Productos -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Productos a Comprar
+                    </h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnSeleccionarTodos">
+                        <i class="fas fa-check-double me-2"></i>Seleccionar Todos
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="buscarProducto" placeholder="Buscar productos...">
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="checkboxTodos" class="form-check-input">
+                                    </th>
+                                    <th>Producto</th>
+                                    <th>Stock Actual</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaProductos">
+                                @if (productos != null)
+                                {
+                                    @foreach (var producto in productos)
+                                    {
+                                        <tr class="producto-row" data-producto-nombre="@producto.Nombre.ToLower()">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input producto-checkbox" 
+                                                       name="productos" value="@producto.ProductoId" 
+                                                       data-producto-id="@producto.ProductoId">
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-wine-glass"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>@producto.Nombre</strong>
+                                                        @if (producto.Categoria != null)
+                                                        {
+                                                            <small class="text-muted d-block">@producto.Categoria.Nombre</small>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(producto.Descripcion))
+                                                        {
+                                                            <small class="text-muted d-block">
+                                                                @(producto.Descripcion.Length > 50 ? 
+                                                                  producto.Descripcion.Substring(0, 50) + "..." : 
+                                                                  producto.Descripcion)
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(producto.Stock > 50 ? "bg-success" : producto.Stock > 10 ? "bg-warning" : "bg-danger")">
+                                                    @producto.Stock unidades
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control cantidad-input" 
+                                                       name="cantidades" min="1" step="1" value="0" 
+                                                       data-producto-id="@producto.ProductoId" disabled>
+                                            </td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" class="form-control precio-input" 
+                                                           name="precios" min="0" step="0.01" value="0" 
+                                                           data-producto-id="@producto.ProductoId" disabled>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong class="subtotal-display" data-producto-id="@producto.ProductoId">$0</strong>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Resumen de Compra -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>Resumen de Compra
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Productos seleccionados:</span>
+                        <strong id="productosSeleccionados">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Total unidades:</span>
+                        <strong id="totalUnidades">0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total a pagar:</strong>
+                        <strong class="text-primary h5" id="totalCompra">$0</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success" id="btnCrearCompra" disabled>
+                            <i class="fas fa-shopping-cart me-2"></i>Crear Compra
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <small>Al completar la compra, el stock se actualizará automáticamente</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock text-info me-2"></i>
+                        <small>La compra iniciará con estado "Pendiente"</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-edit text-warning me-2"></i>
+                        <small>Podrás editar la compra antes de completarla</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Búsqueda de productos
+            $('#buscarProducto').on('input', function() {
+                var busqueda = $(this).val().toLowerCase();
+                $('.producto-row').each(function() {
+                    var nombreProducto = $(this).data('producto-nombre');
+                    if (nombreProducto.includes(busqueda)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            // Checkbox "Seleccionar todos"
+            $('#checkboxTodos, #btnSeleccionarTodos').click(function() {
+                var checked = $('#checkboxTodos').prop('checked');
+                if ($(this).attr('id') === 'btnSeleccionarTodos') {
+                    checked = !checked;
+                    $('#checkboxTodos').prop('checked', checked);
+                }
+                
+                $('.producto-checkbox:visible').prop('checked', checked).trigger('change');
+            });
+
+            // Manejo de selección de productos
+            $('.producto-checkbox').change(function() {
+                var productoId = $(this).data('producto-id');
+                var isChecked = $(this).prop('checked');
+                
+                // Habilitar/deshabilitar inputs
+                $(`.cantidad-input[data-producto-id="${productoId}"]`).prop('disabled', !isChecked);
+                $(`.precio-input[data-producto-id="${productoId}"]`).prop('disabled', !isChecked);
+                
+                if (isChecked) {
+                    $(`.cantidad-input[data-producto-id="${productoId}"]`).val(1).trigger('input');
+                } else {
+                    $(`.cantidad-input[data-producto-id="${productoId}"]`).val(0);
+                    $(`.precio-input[data-producto-id="${productoId}"]`).val(0);
+                }
+                
+                calcularSubtotal(productoId);
+                actualizarResumen();
+            });
+
+            // Cálculo de subtotales
+            $('.cantidad-input, .precio-input').on('input', function() {
+                var productoId = $(this).data('producto-id');
+                calcularSubtotal(productoId);
+                actualizarResumen();
+            });
+
+            // Validación del formulario
+            $('#proveedorId').change(function() {
+                validarFormulario();
+            });
+
+            function calcularSubtotal(productoId) {
+                var cantidad = parseFloat($(`.cantidad-input[data-producto-id="${productoId}"]`).val()) || 0;
+                var precio = parseFloat($(`.precio-input[data-producto-id="${productoId}"]`).val()) || 0;
+                var subtotal = cantidad * precio;
+                
+                $(`.subtotal-display[data-producto-id="${productoId}"]`).text('$' + subtotal.toLocaleString());
+            }
+
+            function actualizarResumen() {
+                var productosSeleccionados = 0;
+                var totalUnidades = 0;
+                var totalCompra = 0;
+
+                $('.producto-checkbox:checked').each(function() {
+                    var productoId = $(this).data('producto-id');
+                    var cantidad = parseFloat($(`.cantidad-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    var precio = parseFloat($(`.precio-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    
+                    if (cantidad > 0 && precio > 0) {
+                        productosSeleccionados++;
+                        totalUnidades += cantidad;
+                        totalCompra += cantidad * precio;
+                    }
+                });
+
+                $('#productosSeleccionados').text(productosSeleccionados);
+                $('#totalUnidades').text(totalUnidades);
+                $('#totalCompra').text('$' + totalCompra.toLocaleString());
+                
+                validarFormulario();
+            }
+
+            function validarFormulario() {
+                var proveedorSeleccionado = $('#proveedorId').val();
+                var productosConDatos = 0;
+                
+                $('.producto-checkbox:checked').each(function() {
+                    var productoId = $(this).data('producto-id');
+                    var cantidad = parseFloat($(`.cantidad-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    var precio = parseFloat($(`.precio-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    
+                    if (cantidad > 0 && precio > 0) {
+                        productosConDatos++;
+                    }
+                });
+
+                var formularioValido = proveedorSeleccionado && productosConDatos > 0;
+                $('#btnCrearCompra').prop('disabled', !formularioValido);
+            }
+
+            // Validación antes de enviar
+            $('#formCompra').submit(function(e) {
+                if (!validarFormularioCompleto()) {
+                    e.preventDefault();
+                    toastr.error('Por favor, complete todos los campos requeridos');
+                }
+            });
+
+            function validarFormularioCompleto() {
+                var proveedorId = $('#proveedorId').val();
+                if (!proveedorId) {
+                    toastr.error('Debe seleccionar un proveedor');
+                    return false;
+                }
+
+                var productosValidos = 0;
+                $('.producto-checkbox:checked').each(function() {
+                    var productoId = $(this).data('producto-id');
+                    var cantidad = parseFloat($(`.cantidad-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    var precio = parseFloat($(`.precio-input[data-producto-id="${productoId}"]`).val()) || 0;
+                    
+                    if (cantidad > 0 && precio > 0) {
+                        productosValidos++;
+                    }
+                });
+
+                if (productosValidos === 0) {
+                    toastr.error('Debe seleccionar al menos un producto con cantidad y precio válidos');
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    </script>
 }

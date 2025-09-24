@@ -1,60 +1,280 @@
 ﻿@model IEnumerable<Licorera.Models.Compra>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Compras";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-shopping-cart me-2"></i>Gestión de Compras</h1>
+        <p>Administra las compras a proveedores</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nueva Compra
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Proveedor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Usuario)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Proveedor.ProveedorId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Usuario.UsuarioId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CompraId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CompraId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CompraId">Delete</a>
-            </td>
-        </tr>
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="title">Total Compras</div>
+                    <div class="value">@Model.Count()</div>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="title">Pendientes</div>
+                    <div class="value">@Model.Count(c => c.Estado == "Pendiente")</div>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="title">Completadas</div>
+                    <div class="value">@Model.Count(c => c.Estado == "Completada")</div>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="title">Total Invertido</div>
+                    <div class="value">$@Model.Where(c => c.Estado == "Completada").Sum(c => c.Total).ToString("N0")</div>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                    <th><i class="fas fa-truck me-2"></i>Proveedor</th>
+                    <th><i class="fas fa-box me-2"></i>Productos</th>
+                    <th><i class="fas fa-dollar-sign me-2"></i>Total</th>
+                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    <th><i class="fas fa-user me-2"></i>Usuario</th>
+                    <th width="150" class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <strong>#@item.CompraId</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar text-muted me-2"></i>
+                                <div>
+                                    <div>@(item.Fecha?.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                                    <small class="text-muted">@(item.Fecha?.ToString("HH:mm") ?? "")</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-truck text-muted me-2"></i>
+                                <div>
+                                    <strong>@(item.Proveedor?.Nombre ?? "N/A")</strong>
+                                    <small class="text-muted d-block">@(item.Proveedor?.Telefono ?? "")</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-box text-muted me-2"></i>
+                                <div>
+                                    <strong>@item.DetalleCompras.Count productos</strong>
+                                    @if (item.DetalleCompras.Any())
+                                    {
+                                        <div class="mt-1">
+                                            @foreach (var detalle in item.DetalleCompras.Take(2))
+                                            {
+                                                <span class="badge bg-light text-dark me-1 mb-1">
+                                                    @detalle.Producto?.Nombre (@detalle.Cantidad)
+                                                </span>
+                                            }
+                                            @if (item.DetalleCompras.Count > 2)
+                                            {
+                                                <span class="badge bg-secondary">+@(item.DetalleCompras.Count - 2) más</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-dollar-sign text-success me-2"></i>
+                                <strong class="text-success">$@item.Total.ToString("N0")</strong>
+                            </div>
+                        </td>
+                        <td>
+                            @{
+                                var estadoClass = "";
+                                var estadoIcon = "";
+                                switch (item.Estado?.ToLower())
+                                {
+                                    case "completada":
+                                        estadoClass = "status-badge active";
+                                        estadoIcon = "fas fa-check-circle";
+                                        break;
+                                    case "pendiente":
+                                        estadoClass = "status-badge pending";
+                                        estadoIcon = "fas fa-clock";
+                                        break;
+                                    case "cancelada":
+                                        estadoClass = "status-badge inactive";
+                                        estadoIcon = "fas fa-times-circle";
+                                        break;
+                                    default:
+                                        estadoClass = "status-badge pending";
+                                        estadoIcon = "fas fa-question-circle";
+                                        break;
+                                }
+                            }
+                            <div class="dropdown">
+                                <span class="@estadoClass dropdown-toggle" style="cursor: pointer;" data-bs-toggle="dropdown">
+                                    <i class="@estadoIcon me-1"></i>
+                                    @(item.Estado ?? "N/A")
+                                </span>
+                                <ul class="dropdown-menu">
+                                    @if (item.Estado != "Pendiente")
+                                    {
+                                        <li><a class="dropdown-item btn-cambiar-estado" href="#" data-compra-id="@item.CompraId" data-estado="Pendiente">
+                                            <i class="fas fa-clock me-2"></i>Pendiente
+                                        </a></li>
+                                    }
+                                    @if (item.Estado != "Completada")
+                                    {
+                                        <li><a class="dropdown-item btn-cambiar-estado" href="#" data-compra-id="@item.CompraId" data-estado="Completada">
+                                            <i class="fas fa-check-circle me-2"></i>Completada
+                                        </a></li>
+                                    }
+                                    @if (item.Estado != "Cancelada")
+                                    {
+                                        <li><a class="dropdown-item btn-cambiar-estado" href="#" data-compra-id="@item.CompraId" data-estado="Cancelada">
+                                            <i class="fas fa-times-circle me-2"></i>Cancelada
+                                        </a></li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-muted me-2"></i>
+                                <div>
+                                    <strong>@(item.Usuario?.Nombre ?? "N/A")</strong>
+                                    <small class="text-muted d-block">@(item.Usuario?.Email ?? "")</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@item.CompraId" 
+                                   class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (item.Estado == "Pendiente")
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.CompraId" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                }
+                                <a asp-action="Delete" asp-route-id="@item.CompraId" 
+                                   class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5">
+        <div class="mb-3">
+            <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">No hay compras registradas</h4>
+        <p class="text-muted">Comienza creando tu primera compra a proveedores</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Crear Primera Compra
+        </a>
+    </div>
 }
-    </tbody>
-</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.btn-cambiar-estado').click(function(e) {
+                e.preventDefault();
+                var compraId = $(this).data('compra-id');
+                var nuevoEstado = $(this).data('estado');
+                
+                if (confirm(`¿Estás seguro de que quieres cambiar el estado a "${nuevoEstado}"?`)) {
+                    $.ajax({
+                        url: '@Url.Action("CambiarEstado", "Compras")',
+                        type: 'POST',
+                        data: { 
+                            compraId: compraId, 
+                            nuevoEstado: nuevoEstado 
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function() {
+                            toastr.error('Error al cambiar el estado de la compra');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,206 @@
+@model IEnumerable<Licorera.Models.Producto>
+
+@{
+    ViewData["Title"] = "Catálogo de Productos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-wine-glass me-2"></i>Catálogo de Productos</h1>
+    <p>Descubre nuestra selección de licores premium</p>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar productos</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" name="busqueda" class="form-control" 
+                                   placeholder="Nombre o descripción..." value="@ViewBag.BusquedaActual">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Categoría</label>
+                        <select name="categoria" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            @foreach (var cat in ViewBag.Categorias as List<Licorera.Models.Categoria>)
+                            {
+                                <option value="@cat.Nombre" selected="@(ViewBag.CategoriaSeleccionada == cat.Nombre)">
+                                    @cat.Nombre
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Ordenar por</label>
+                        <select name="orden" class="form-select">
+                            <option value="nombre" selected="@(ViewBag.OrdenActual == "nombre")">Nombre A-Z</option>
+                            <option value="precio_asc" selected="@(ViewBag.OrdenActual == "precio_asc")">Precio: Menor a Mayor</option>
+                            <option value="precio_desc" selected="@(ViewBag.OrdenActual == "precio_desc")">Precio: Mayor a Menor</option>
+                            <option value="stock" selected="@(ViewBag.OrdenActual == "stock")">Disponibilidad</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="title">Productos disponibles</div>
+                    <div class="value">@Model.Count()</div>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wine-bottle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grid de Productos -->
+<div class="row">
+    @foreach (var producto in Model)
+    {
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card product-card h-100">
+                <div class="product-image">
+                    <img src="~/images/productos/default-product.jpg" 
+                         class="card-img-top" alt="@producto.Nombre"
+                         onerror="this.src='/images/default-product.jpg';">
+                    
+                    @{
+                        var stockClass = producto.Stock > 50 ? "bg-success" : producto.Stock > 10 ? "bg-warning" : "bg-danger";
+                    }
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge @stockClass">
+                            @producto.Stock en stock
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="mb-2">
+                        @if (producto.Categoria != null)
+                        {
+                            <span class="badge bg-secondary mb-2">@producto.Categoria.Nombre</span>
+                        }
+                    </div>
+                    
+                    <h5 class="card-title">@producto.Nombre</h5>
+                    
+                    @if (!string.IsNullOrEmpty(producto.Descripcion))
+                    {
+                        <p class="card-text text-muted">
+                            @(producto.Descripcion.Length > 100 ? 
+                              producto.Descripcion.Substring(0, 100) + "..." : 
+                              producto.Descripcion)
+                        </p>
+                    }
+                    
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="price">
+                                <span class="h4 text-primary mb-0">$@producto.Precio.ToString("N0")</span>
+                            </div>
+                            <div class="stock-info">
+                                <small class="text-muted">
+                                    <i class="fas fa-box me-1"></i>@producto.Stock disponibles
+                                </small>
+                            </div>
+                        </div>
+                        
+                        @if (producto.Stock > 0)
+                        {
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <input type="number" class="form-control form-control-sm" 
+                                           id="cantidad_@producto.ProductoId" 
+                                           value="1" min="1" max="@producto.Stock">
+                                </div>
+                                <div class="col-8">
+                                    <button class="btn btn-primary btn-sm w-100 btn-agregar-carrito" 
+                                            data-producto-id="@producto.ProductoId">
+                                        <i class="fas fa-cart-plus me-2"></i>Agregar al Carrito
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-secondary w-100" disabled>
+                                <i class="fas fa-times me-2"></i>Agotado
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5">
+        <div class="mb-3">
+            <i class="fas fa-search text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">No se encontraron productos</h4>
+        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+        <a href="@Url.Action("Index")" class="btn btn-primary">
+            <i class="fas fa-refresh me-2"></i>Ver Todos los Productos
+        </a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.btn-agregar-carrito').click(function() {
+                var productoId = $(this).data('producto-id');
+                var cantidad = $('#cantidad_' + productoId).val();
+                
+                $.ajax({
+                    url: '@Url.Action("Agregar", "Carrito")',
+                    type: 'POST',
+                    data: {
+                        productoId: productoId,
+                        cantidad: cantidad
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Mostrar mensaje de éxito
+                            toastr.success(response.message);
+                            
+                            // Opcional: actualizar contador del carrito en navbar
+                            actualizarContadorCarrito();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Error al agregar el producto al carrito');
+                    }
+                });
+            });
+        });
+        
+        function actualizarContadorCarrito() {
+            // Implementar lógica para actualizar el contador del carrito
+            // en el navbar si es necesario
+        }
+    </script>
+}

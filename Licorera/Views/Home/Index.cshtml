@@ -1,8 +1,428 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = User.Identity.IsAuthenticated ? "Dashboard" : "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (User.Identity.IsAuthenticated)
+{
+    @if (User.IsInRole("Admin"))
+    {
+        <!-- Admin Dashboard -->
+        <div class="page-header">
+            <h1><i class="fas fa-tachometer-alt me-2"></i>Panel de Administración</h1>
+            <p>Bienvenido al sistema de gestión de Grandma's Liqueurs</p>
+        </div>
+
+        <!-- Admin Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card stats-card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Total Usuarios</div>
+                                <div class="h2 font-weight-bold">@ViewBag.TotalUsuarios</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Permisos" asp-action="Index" class="text-white text-decoration-none">
+                            Ver detalles <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card stats-card bg-success text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Total Clientes</div>
+                                <div class="h2 font-weight-bold">@ViewBag.TotalClientes</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Clientes" asp-action="Index" class="text-white text-decoration-none">
+                            Ver clientes <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card stats-card bg-warning text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Total Productos</div>
+                                <div class="h2 font-weight-bold">@ViewBag.TotalProductos</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-wine-bottle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Productoes" asp-action="Index" class="text-white text-decoration-none">
+                            Ver productos <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card stats-card bg-info text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Total Ventas</div>
+                                <div class="h2 font-weight-bold">@ViewBag.TotalVentas</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-cash-register"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Ventas" asp-action="Index" class="text-white text-decoration-none">
+                            Ver ventas <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Performance -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Rendimiento de Hoy
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="h3 text-success">@ViewBag.VentasHoy</div>
+                                <div class="text-muted">Ventas Realizadas</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="h3 text-primary">$@(ViewBag.IngresosHoy?.ToString("N0") ?? "0")</div>
+                                <div class="text-muted">Ingresos Generados</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tasks me-2"></i>Acciones Rápidas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Permisos" asp-action="Create" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                            </a>
+                            <a asp-controller="Productoes" asp-action="Create" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-2"></i>Agregar Producto
+                            </a>
+                            <a asp-controller="Compras" asp-action="Create" class="btn btn-outline-info">
+                                <i class="fas fa-shopping-cart me-2"></i>Nueva Compra
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (User.IsInRole("Vendedor"))
+    {
+        <!-- Vendedor Dashboard -->
+        <div class="page-header">
+            <h1><i class="fas fa-user-tie me-2"></i>Panel de Vendedor</h1>
+            <p>Gestiona las ventas y pedidos de los clientes</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cash-register fa-3x text-success mb-3"></i>
+                        <h5>Gestionar Ventas</h5>
+                        <p class="text-muted">Administra las ventas realizadas por los clientes</p>
+                        <a asp-controller="Ventas" asp-action="Index" class="btn btn-success">
+                            <i class="fas fa-arrow-right me-2"></i>Ir a Ventas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+                        <h5>Ver Pedidos</h5>
+                        <p class="text-muted">Revisa y gestiona los pedidos de los clientes</p>
+                        <a asp-controller="Pedidoes" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-2"></i>Ver Pedidos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Cliente Dashboard -->
+        <div class="page-header">
+            <h1><i class="fas fa-user me-2"></i>Mi Panel</h1>
+            <p>Bienvenido a Grandma's Liqueurs - Explora nuestros productos</p>
+        </div>
+
+        <!-- Cliente Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="card stats-card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Mis Pedidos</div>
+                                <div class="h2 font-weight-bold">@ViewBag.TotalPedidos</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="MisPedidos" asp-action="Index" class="text-white text-decoration-none">
+                            Ver mis pedidos <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card stats-card bg-warning text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="small">Pedidos Pendientes</div>
+                                <div class="h2 font-weight-bold">@ViewBag.PedidosPendientes</div>
+                            </div>
+                            <div class="h1">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="MisPedidos" asp-action="Index" class="text-white text-decoration-none">
+                            Ver pendientes <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cliente Actions -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-wine-glass fa-3x text-primary mb-3"></i>
+                        <h5>Explorar Catálogo</h5>
+                        <p class="text-muted">Descubre nuestra selección de licores premium</p>
+                        <a asp-controller="Catalogo" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Ver Productos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-cart fa-3x text-success mb-3"></i>
+                        <h5>Mi Carrito</h5>
+                        <p class="text-muted">Revisa y gestiona tu carrito de compras</p>
+                        <a asp-controller="Carrito" asp-action="Index" class="btn btn-success">
+                            <i class="fas fa-shopping-cart me-2"></i>Ver Carrito
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-history fa-3x text-info mb-3"></i>
+                        <h5>Historial</h5>
+                        <p class="text-muted">Revisa el historial de tus pedidos anteriores</p>
+                        <a asp-controller="MisPedidos" asp-action="Index" class="btn btn-info">
+                            <i class="fas fa-list me-2"></i>Ver Historial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <!-- Public Home Page -->
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Bienvenido a Grandma's Liqueurs</h1>
+                    <p class="lead mb-4">Descubre nuestra exclusiva selección de licores premium y bebidas artesanales.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-4 me-md-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="~/images/hero-image.jpg" alt="Licores Premium" class="img-fluid rounded-3 shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-wine-bottle"></i>
+                        </div>
+                        <h3>Productos Premium</h3>
+                        <p>Selección exclusiva de licores nacionales e importados de la más alta calidad.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3>Envío Rápido</h3>
+                        <p>Entrega a domicilio en menos de 24 horas en el área metropolitana.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Compra Segura</h3>
+                        <p>Garantizamos la autenticidad de todos nuestros productos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Preview Section -->
+    <section id="products" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Nuestros Productos Destacados</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="~/images/whisky.jpg" alt="Whisky Premium" class="img-fluid">
+                        </div>
+                        <div class="product-info">
+                            <h4>Whisky Premium</h4>
+                            <p class="text-muted">Descubre nuestra selección de whiskies añejados.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="~/images/wine.jpg" alt="Vinos" class="img-fluid">
+                        </div>
+                        <div class="product-info">
+                            <h4>Vinos Selectos</h4>
+                            <p class="text-muted">Los mejores vinos de diferentes regiones.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="~/images/gin.jpg" alt="Gin" class="img-fluid">
+                        </div>
+                        <div class="product-info">
+                            <h4>Gin Premium</h4>
+                            <p class="text-muted">Gin artesanal y de importación.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="~/images/tequila.jpg" alt="Tequila" class="img-fluid">
+                        </div>
+                        <div class="product-info">
+                            <h4>Tequila</h4>
+                            <p class="text-muted">El mejor tequila mexicano.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">Contáctanos</h2>
+                    <form class="contact-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mensaje</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    <div class="map-container">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.8101420563025!2d-74.07709548573682!3d4.639976343504847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a2fe9fe2d0d%3A0x6c0b4e7f8d8d8d8d!2sBogot%C3%A1%2C%20Colombia!5e0!3m2!1ses!2sco!4v1621436426095!5m2!1ses!2sco" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}

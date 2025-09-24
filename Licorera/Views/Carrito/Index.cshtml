@@ -1,0 +1,421 @@
+@model Licorera.Models.Carrito
+
+@{
+    ViewData["Title"] = "Mi Carrito";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-shopping-cart me-2"></i>Mi Carrito de Compras</h1>
+        <p>Revisa los productos seleccionados</p>
+    </div>
+    <a asp-controller="Catalogo" asp-action="Index" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Continuar Comprando
+    </a>
+</div>
+
+@if (Model.Items.Any())
+{
+    <!-- Carrito con Productos -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Productos en tu carrito (@Model.TotalProductos productos, @Model.TotalItems unidades)</h5>
+                    <button class="btn btn-outline-danger btn-sm" id="vaciar-carrito">
+                        <i class="fas fa-trash me-2"></i>Vaciar Carrito
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th width="50"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="icon-wrapper me-3" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-wine-glass"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>@item.NombreProducto</strong>
+                                                    @if (!string.IsNullOrEmpty(item.Categoria))
+                                                    {
+                                                        <div><span class="badge bg-secondary">@item.Categoria</span></div>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.Descripcion))
+                                                    {
+                                                        <small class="text-muted d-block">
+                                                            @(item.Descripcion.Length > 60 ? 
+                                                              item.Descripcion.Substring(0, 60) + "..." : 
+                                                              item.Descripcion)
+                                                        </small>
+                                                    }
+                                                    <small class="text-info">
+                                                        <i class="fas fa-box me-1"></i>@item.StockDisponible disponibles
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-dollar-sign text-success me-2"></i>
+                                                <strong class="text-success">$@item.Precio.ToString("N0")</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="input-group" style="width: 120px;">
+                                                    <button class="btn btn-outline-secondary btn-sm btn-cantidad" 
+                                                            data-producto-id="@item.ProductoId" 
+                                                            data-accion="decrementar">-</button>
+                                                    <input type="number" class="form-control form-control-sm text-center cantidad-input" 
+                                                           data-producto-id="@item.ProductoId"
+                                                           value="@item.Cantidad" min="1" max="@item.StockDisponible">
+                                                    <button class="btn btn-outline-secondary btn-sm btn-cantidad" 
+                                                            data-producto-id="@item.ProductoId" 
+                                                            data-accion="incrementar">+</button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-calculator text-primary me-2"></i>
+                                                <strong class="text-primary subtotal-@item.ProductoId">$@item.Subtotal.ToString("N0")</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-outline-danger btn-sm btn-eliminar-item" 
+                                                    data-producto-id="@item.ProductoId"
+                                                    title="Eliminar producto">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cupones de Descuento -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-tag me-2"></i>¿Tienes un cupón de descuento?</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="cupon-codigo" placeholder="Ingresa tu código de cupón">
+                        <button class="btn btn-outline-primary" id="aplicar-cupon">
+                            <i class="fas fa-check me-2"></i>Aplicar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Resumen del Pedido -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Resumen del Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Productos:</span>
+                        <span id="resumen-productos">@Model.TotalProductos</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total unidades:</span>
+                        <span id="resumen-unidades">@Model.TotalItems</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="resumen-subtotal">$@Model.Total.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span class="@(Model.Total >= 100000 ? "text-success" : "")">
+                            @(Model.Total >= 100000 ? "GRATIS" : "$5,000")
+                        </span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary h5" id="resumen-total">
+                            $@((Model.Total + (Model.Total >= 100000 ? 0 : 5000)).ToString("N0"))
+                        </strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" id="procesar-pedido">
+                            <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                        </button>
+                        <a asp-controller="Catalogo" asp-action="Index" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Continuar Comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Información de Envío -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>Información de Envío
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <small>Envío gratuito en compras mayores a $100,000</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock text-info me-2"></i>
+                        <small>Entrega en 2-3 días hábiles</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-warning me-2"></i>
+                        <small>Compra protegida</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Carrito Vacío -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">Tu carrito está vacío</h4>
+                    <p class="text-muted mb-4">
+                        ¡Explora nuestro catálogo y encuentra los mejores licores para ti!
+                    </p>
+                    <a asp-controller="Catalogo" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-wine-glass me-2"></i>Explorar Catálogo
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Resumen del Pedido -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Resumen del Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>$0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span>$0</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary">$0</strong>
+                    </div>
+                    <button class="btn btn-success w-100" disabled>
+                        <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Eliminar producto del carrito
+            $('.btn-eliminar-item').click(function() {
+                var productoId = $(this).data('producto-id');
+                eliminarDelCarrito(productoId);
+            });
+
+            // Botones de cantidad (+ y -)
+            $('.btn-cantidad').click(function() {
+                var productoId = $(this).data('producto-id');
+                var accion = $(this).data('accion');
+                var input = $(`.cantidad-input[data-producto-id="${productoId}"]`);
+                var cantidadActual = parseInt(input.val());
+                var max = parseInt(input.attr('max'));
+                
+                var nuevaCantidad = cantidadActual;
+                if (accion === 'incrementar' && cantidadActual < max) {
+                    nuevaCantidad = cantidadActual + 1;
+                } else if (accion === 'decrementar' && cantidadActual > 1) {
+                    nuevaCantidad = cantidadActual - 1;
+                }
+                
+                if (nuevaCantidad !== cantidadActual) {
+                    input.val(nuevaCantidad);
+                    actualizarCantidad(productoId, nuevaCantidad);
+                }
+            });
+
+            // Cambio directo en input de cantidad
+            $('.cantidad-input').change(function() {
+                var productoId = $(this).data('producto-id');
+                var nuevaCantidad = parseInt($(this).val());
+                var max = parseInt($(this).attr('max'));
+                
+                if (nuevaCantidad < 1) {
+                    nuevaCantidad = 1;
+                    $(this).val(1);
+                } else if (nuevaCantidad > max) {
+                    nuevaCantidad = max;
+                    $(this).val(max);
+                    toastr.warning(`Stock máximo disponible: ${max}`);
+                }
+                
+                actualizarCantidad(productoId, nuevaCantidad);
+            });
+            
+            // Vaciar carrito
+            $('#vaciar-carrito').click(function() {
+                if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+                    vaciarCarrito();
+                }
+            });
+
+            // Procesar pedido
+            $('#procesar-pedido').click(function() {
+                if (confirm('¿Confirmas que quieres procesar este pedido?')) {
+                    procesarPedido();
+                }
+            });
+
+            // Aplicar cupón (funcionalidad futura)
+            $('#aplicar-cupon').click(function() {
+                var codigo = $('#cupon-codigo').val();
+                if (codigo) {
+                    toastr.info('Funcionalidad de cupones próximamente disponible');
+                } else {
+                    toastr.warning('Ingresa un código de cupón');
+                }
+            });
+        });
+        
+        function eliminarDelCarrito(productoId) {
+            $.ajax({
+                url: '@Url.Action("Eliminar", "Carrito")',
+                type: 'POST',
+                data: { productoId: productoId },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload(); // Recargar para actualizar la vista
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al eliminar el producto del carrito');
+                }
+            });
+        }
+        
+        function actualizarCantidad(productoId, cantidad) {
+            $.ajax({
+                url: '@Url.Action("ActualizarCantidad", "Carrito")',
+                type: 'POST',
+                data: { 
+                    productoId: productoId, 
+                    cantidad: cantidad 
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Actualizar subtotal del producto
+                        var precio = parseFloat($(`.cantidad-input[data-producto-id="${productoId}"]`).closest('tr').find('td:eq(1) strong').text().replace('$', '').replace(',', ''));
+                        var nuevoSubtotal = precio * cantidad;
+                        $(`.subtotal-${productoId}`).text('$' + nuevoSubtotal.toLocaleString());
+                        
+                        // Actualizar resumen
+                        $('#resumen-productos').text(response.totalProductos);
+                        $('#resumen-unidades').text(response.totalItems);
+                        $('#resumen-subtotal').text('$' + response.total.toLocaleString());
+                        
+                        var envio = response.total >= 100000 ? 0 : 5000;
+                        var totalConEnvio = response.total + envio;
+                        $('#resumen-total').text('$' + totalConEnvio.toLocaleString());
+                        
+                        toastr.success('Cantidad actualizada');
+                    } else {
+                        toastr.error(response.message);
+                        location.reload(); // Recargar si hay error para sincronizar
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al actualizar la cantidad');
+                }
+            });
+        }
+        
+        function vaciarCarrito() {
+            $.ajax({
+                url: '@Url.Action("VaciarCarrito", "Carrito")',
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al vaciar el carrito');
+                }
+            });
+        }
+
+        function procesarPedido() {
+            var $btn = $('#procesar-pedido');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Procesando...');
+            
+            $.ajax({
+                url: '@Url.Action("ProcesarPedido", "Carrito")',
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Detalles", "MisPedidos")/' + response.pedidoId;
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message);
+                        $btn.prop('disabled', false).html('<i class="fas fa-credit-card me-2"></i>Proceder al Pago');
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al procesar el pedido');
+                    $btn.prop('disabled', false).html('<i class="fas fa-credit-card me-2"></i>Proceder al Pago');
+                }
+            });
+        }
+    </script>
+}

@@ -1,36 +1,130 @@
 ﻿@model IEnumerable<Licorera.Models.Role>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Roles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-users me-2"></i>Gestión de Roles</h1>
+        <p>Administra los roles del sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Permisos" asp-action="Index" class="btn btn-info">
+            <i class="fas fa-user-shield me-2"></i>Gestionar Permisos de Usuario
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Crear Nuevo Rol
+        </a>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.RolId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.RolId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.RolId">Delete</a>
-            </td>
-        </tr>
+<!-- Alert informativo -->
+<div class="alert alert-info d-flex align-items-center" role="alert">
+    <i class="fas fa-info-circle me-3"></i>
+    <div>
+        <strong>Gestión de Permisos:</strong> Para asignar el rol de <strong>Vendedor</strong> a usuarios existentes, 
+        utiliza el botón <strong>"Gestionar Permisos de Usuario"</strong> donde podrás promover clientes a vendedores 
+        con acceso completo a la gestión de ventas.
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th><i class="fas fa-tag me-2"></i>@Html.DisplayNameFor(model => model.Nombre)</th>
+                <th><i class="fas fa-info-circle me-2"></i>Descripción</th>
+                <th><i class="fas fa-users me-2"></i>Usuarios</th>
+                <th width="120" class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                @if (item.Nombre == "Admin")
+                                {
+                                    <i class="fas fa-crown text-warning"></i>
+                                }
+                                else if (item.Nombre == "Vendedor")
+                                {
+                                    <i class="fas fa-user-tie text-info"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user-tag text-secondary"></i>
+                                }
+                            </div>
+                            <div>
+                                <strong>@Html.DisplayFor(modelItem => item.Nombre)</strong>
+                                <small class="text-muted d-block">ID: @item.RolId</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        @if (item.Nombre == "Admin")
+                        {
+                            <span class="text-muted">Acceso completo al sistema, gestión de usuarios y configuración</span>
+                        }
+                        else if (item.Nombre == "Vendedor")
+                        {
+                            <span class="text-muted">Gestión de ventas, pedidos y clientes</span>
+                        }
+                        else if (item.Nombre == "Cliente")
+                        {
+                            <span class="text-muted">Acceso al catálogo, carrito de compras y pedidos personales</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Rol personalizado</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge bg-primary">@item.Usuarios.Count() usuarios</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="action-buttons">
+                            <a asp-action="Details" asp-route-id="@item.RolId" 
+                               class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            @if (item.Nombre != "Admin")
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.RolId" 
+                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            }
+                            @if (item.Nombre != "Admin" && item.Nombre != "Cliente" && item.Nombre != "Vendedor")
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.RolId" 
+                                   class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5">
+        <div class="mb-3">
+            <i class="fas fa-users text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">No hay roles registrados</h4>
+        <p class="text-muted">Comienza creando tu primer rol</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Crear Primer Rol
+        </a>
+    </div>
 }
-    </tbody>
-</table>

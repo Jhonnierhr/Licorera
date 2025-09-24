@@ -1,46 +1,233 @@
 ﻿@model Licorera.Models.Pedido
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar Pedido";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Delete</h1>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Pedido</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fecha)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fecha)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Total)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Total)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Estado)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cliente)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cliente.ClienteId)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="PedidoId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-trash-alt text-danger me-2"></i>Eliminar Pedido</h1>
+        <p>Confirma la eliminación del pedido #@Model.PedidoId</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+    </a>
 </div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>¿Estás seguro de que quieres eliminar este pedido?
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer. Se eliminarán tanto el pedido como todos sus productos asociados.
+                </div>
+                
+                <!-- Información del pedido -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información del Pedido</h6>
+                        <dl class="row">
+                            <dt class="col-sm-5">ID del Pedido:</dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-primary fs-6">#@Model.PedidoId</span>
+                            </dd>
+                            
+                            <dt class="col-sm-5">Fecha:</dt>
+                            <dd class="col-sm-7">
+                                <i class="fas fa-calendar text-muted me-1"></i>
+                                @Model.Fecha?.ToString("dd/MM/yyyy HH:mm")
+                            </dd>
+                            
+                            <dt class="col-sm-5">Total:</dt>
+                            <dd class="col-sm-7">
+                                <span class="h6 text-success">$@Model.Total.ToString("N0")</span>
+                            </dd>
+                            
+                            <dt class="col-sm-5">Estado:</dt>
+                            <dd class="col-sm-7">
+                                @{
+                                    var estadoClass = Model.Estado?.ToLower() switch
+                                    {
+                                        "completado" => "badge bg-success",
+                                        "pendiente" => "badge bg-warning text-dark",
+                                        "en proceso" => "badge bg-info",
+                                        "enviado" => "badge bg-primary",
+                                        "cancelado" => "badge bg-danger",
+                                        _ => "badge bg-secondary"
+                                    };
+                                }
+                                <span class="@estadoClass">@Model.Estado</span>
+                            </dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2"></i>Información del Cliente</h6>
+                        @if (Model.Cliente != null)
+                        {
+                            <dl class="row">
+                                <dt class="col-sm-5">Cliente:</dt>
+                                <dd class="col-sm-7">@Model.Cliente.Nombre</dd>
+                                
+                                <dt class="col-sm-5">Email:</dt>
+                                <dd class="col-sm-7">@Model.Cliente.Email</dd>
+                                
+                                <dt class="col-sm-5">Cliente ID:</dt>
+                                <dd class="col-sm-7">#@Model.Cliente.ClienteId</dd>
+                            </dl>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Cliente no encontrado</p>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Productos del pedido -->
+                @if (Model.DetallePedidos?.Any() == true)
+                {
+                    <hr>
+                    <h6><i class="fas fa-box me-2"></i>Productos que se eliminarán (@Model.DetallePedidos.Count items)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unit.</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detalle in Model.DetallePedidos)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-wine-bottle text-primary me-2"></i>
+                                            @(detalle.Producto?.Nombre ?? "Producto no encontrado")
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">@detalle.Cantidad</span>
+                                        </td>
+                                        <td class="text-end">$@detalle.PrecioUnitario.ToString("N0")</td>
+                                        <td class="text-end">
+                                            <strong>$@((detalle.Cantidad * detalle.PrecioUnitario).ToString("N0"))</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-info">
+                        <i class="fas fa-eye me-2"></i>Ver Detalles Completos
+                    </a>
+                    
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <form asp-action="Delete" method="post" class="d-inline" id="deleteForm">
+                            <input type="hidden" asp-for="PedidoId" />
+                            <button type="submit" class="btn btn-danger" id="deleteBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-trash me-2"></i>Confirmar Eliminación
+                                </span>
+                                <span class="loading d-none">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Eliminando...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de advertencia -->
+    <div class="col-lg-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Advertencias Importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-times-circle text-danger me-2"></i>
+                        <strong>Eliminación permanente:</strong> No podrás recuperar este pedido
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-box text-warning me-2"></i>
+                        <strong>Productos asociados:</strong> Se eliminarán todos los detalles
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-chart-bar text-info me-2"></i>
+                        <strong>Estadísticas:</strong> Afectará los reportes históricos
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-user text-primary me-2"></i>
+                        <strong>Cliente:</strong> El cliente seguirá existiendo
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>¿Considerar Alternativas?
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small">En lugar de eliminar el pedido, podrías:</p>
+                <ul class="small">
+                    <li>Cambiar el estado a "Cancelado"</li>
+                    <li>Editar la información si hay errores</li>
+                    <li>Mantenerlo para registros históricos</li>
+                </ul>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <a asp-action="Edit" asp-route-id="@Model.PedidoId" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>Editar en su lugar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle form submission with confirmation
+            $('#deleteForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                if (confirm('¿Estás absolutamente seguro de que quieres eliminar este pedido? Esta acción NO se puede deshacer.')) {
+                    const deleteBtn = $('#deleteBtn');
+                    const btnText = deleteBtn.find('.btn-text');
+                    const loading = deleteBtn.find('.loading');
+                    
+                    // Show loading state
+                    btnText.addClass('d-none');
+                    loading.removeClass('d-none');
+                    deleteBtn.prop('disabled', true);
+                    
+                    // Submit the form
+                    this.submit();
+                }
+            });
+        });
+    </script>
+}

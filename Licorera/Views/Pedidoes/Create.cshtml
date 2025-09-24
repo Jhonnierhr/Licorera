@@ -1,38 +1,223 @@
 ﻿@model Licorera.Models.Pedido
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Crear Pedido";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Create</h1>
-
-<h4>Pedido</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
-                <select asp-for="ClienteId" class ="form-control" asp-items="ViewBag.ClienteId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-plus me-2"></i>Crear Nuevo Pedido</h1>
+        <p>Registra un nuevo pedido en el sistema</p>
     </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+    </a>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>Información del Pedido
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="createOrderForm">
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Por favor, corrige los siguientes errores:</strong>
+                            <div asp-validation-summary="ModelOnly"></div>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ClienteId" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Cliente *
+                                </label>
+                                <select asp-for="ClienteId" class="form-select" asp-items="ViewBag.ClienteId" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                </select>
+                                <span asp-validation-for="ClienteId" class="text-danger"></span>
+                                <div class="form-text">
+                                    Selecciona el cliente que realizará el pedido
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Estado" class="form-label">
+                                    <i class="fas fa-info-circle me-1"></i>Estado Inicial
+                                </label>
+                                <select asp-for="Estado" class="form-select">
+                                    <option value="Pendiente" selected>Pendiente</option>
+                                    <option value="En Proceso">En Proceso</option>
+                                    <option value="Enviado">Enviado</option>
+                                    <option value="Completado">Completado</option>
+                                </select>
+                                <span asp-validation-for="Estado" class="text-danger"></span>
+                                <div class="form-text">
+                                    Estado inicial del pedido (por defecto: Pendiente)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Total" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>Total del Pedido *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Total" class="form-control" placeholder="0.00" required />
+                                </div>
+                                <span asp-validation-for="Total" class="text-danger"></span>
+                                <div class="form-text">
+                                    Monto total del pedido en pesos colombianos
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Fecha de Creación
+                                </label>
+                                <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")" readonly>
+                                <div class="form-text">
+                                    La fecha se asigna automáticamente al crear el pedido
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Información importante:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>El pedido se creará con la fecha y hora actual</li>
+                            <li>Después de crear el pedido, podrás agregar productos desde la vista de detalles</li>
+                            <li>El estado puede ser modificado posteriormente desde la gestión de pedidos</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span class="btn-text">
+                                <i class="fas fa-save me-2"></i>Crear Pedido
+                            </span>
+                            <span class="loading d-none">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Creando...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Ayuda
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>¿Cómo crear un pedido?</h6>
+                <ol class="small">
+                    <li><strong>Selecciona el cliente</strong> que realizará el pedido</li>
+                    <li><strong>Ingresa el total</strong> del pedido</li>
+                    <li><strong>Define el estado inicial</strong> (normalmente Pendiente)</li>
+                    <li><strong>Haz clic en Crear</strong> para guardar el pedido</li>
+                </ol>
+                
+                <hr>
+                
+                <h6>Estados disponibles:</h6>
+                <ul class="small">
+                    <li><span class="badge bg-warning text-dark">Pendiente</span> - Recién creado</li>
+                    <li><span class="badge bg-info">En Proceso</span> - Siendo preparado</li>
+                    <li><span class="badge bg-primary">Enviado</span> - En camino al cliente</li>
+                    <li><span class="badge bg-success">Completado</span> - Entregado exitosamente</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Estadísticas Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="h4 text-primary">@ViewBag.TotalPedidos</div>
+                    <div class="text-muted">Total de pedidos</div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h6 text-warning">@ViewBag.PedidosPendientes</div>
+                        <div class="small text-muted">Pendientes</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h6 text-success">@ViewBag.PedidosCompletados</div>
+                        <div class="small text-muted">Completados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#createOrderForm').on('submit', function() {
+                const submitBtn = $('#submitBtn');
+                const btnText = submitBtn.find('.btn-text');
+                const loading = submitBtn.find('.loading');
+                
+                // Show loading state
+                btnText.addClass('d-none');
+                loading.removeClass('d-none');
+                submitBtn.prop('disabled', true);
+                
+                // Re-enable button after 5 seconds as fallback
+                setTimeout(function() {
+                    btnText.removeClass('d-none');
+                    loading.addClass('d-none');
+                    submitBtn.prop('disabled', false);
+                }, 5000);
+            });
+            
+            // Focus on first field
+            $('#ClienteId').focus();
+            
+            // Format currency input
+            $('#Total').on('input', function() {
+                let value = $(this).val().replace(/[^0-9.]/g, '');
+                if (value) {
+                    $(this).val(value);
+                }
+            });
+        });
+    </script>
 }

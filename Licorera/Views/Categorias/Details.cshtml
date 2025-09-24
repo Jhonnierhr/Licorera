@@ -5,92 +5,140 @@
 }
 
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="mb-4">
+    <!-- Page Header -->
+    <div class="page-header">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-action="Index">Categorías</a></li>
                 <li class="breadcrumb-item active">Detalles</li>
             </ol>
         </nav>
-        <h1 class="h3 mb-2">Detalles de Categoría</h1>
+        <h1>Detalles de Categoría</h1>
         <p class="text-muted">Información detallada de la categoría</p>
     </div>
 
-    <!-- Details Card -->
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-2">Nombre de la Categoría</h6>
-                        <p class="h5">@Html.DisplayFor(model => model.Nombre)</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-2">ID de la Categoría</h6>
-                        <p class="h5">#@Html.DisplayFor(model => model.CategoriaId)</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-2">Productos Asociados</h6>
-                        <p class="h5">@(Model.Productos?.Count ?? 0) productos</p>
+    <div class="row">
+        <!-- Main Details -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Información General</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <div class="detail-label">ID de Categoría</div>
+                                <div class="detail-value">#@Html.DisplayFor(model => model.CategoriaId)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <div class="detail-label">Nombre</div>
+                                <div class="detail-value">@Html.DisplayFor(model => model.Nombre)</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <a asp-action="Index" class="btn btn-light">
-                    <i class="fas fa-arrow-left me-2"></i>Volver
-                </a>
-                <a asp-action="Edit" asp-route-id="@Model?.CategoriaId" class="btn btn-primary">
-                    <i class="fas fa-edit me-2"></i>Editar
-                </a>
+            @if (Model.Productos != null && Model.Productos.Any())
+            {
+                <!-- Products Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-box me-2"></i>Productos en esta Categoría</h5>
+                        <span class="badge bg-primary">@Model.Productos.Count() productos</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var producto in Model.Productos)
+                                    {
+                                        <tr>
+                                            <td>#@producto.ProductoId</td>
+                                            <td>@producto.Nombre</td>
+                                            <td>$@producto.Precio.ToString("N2")</td>
+                                            <td>@producto.Stock</td>
+                                            <td>
+                                                @if (producto.Stock > 0)
+                                                {
+                                                    <span class="status-badge active">En Stock</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="status-badge inactive">Agotado</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Esta categoría no tiene productos asociados.
+                </div>
+            }
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog me-2"></i>Acciones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model?.CategoriaId" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Categoría
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model?.CategoriaId" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Eliminar Categoría
+                        </a>
+                        <a asp-action="Index" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Estadísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="detail-group">
+                        <div class="detail-label">Total de Productos</div>
+                        <div class="detail-value">@(Model.Productos?.Count() ?? 0)</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Productos en Stock</div>
+                        <div class="detail-value">@(Model.Productos?.Count(p => p.Stock > 0) ?? 0)</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Productos Agotados</div>
+                        <div class="detail-value">@(Model.Productos?.Count(p => p.Stock == 0) ?? 0)</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    @if (Model.Productos != null && Model.Productos.Any())
-    {
-        <!-- Products Table -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Productos en esta Categoría</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Stock</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var producto in Model.Productos)
-                            {
-                                <tr>
-                                    <td>@producto.Nombre</td>
-                                    <td>$@producto.Precio.ToString("N2")</td>
-                                    <td>@producto.Stock</td>
-                                    <td>
-                                        @if (producto.Stock > 0)
-                                        {
-                                            <span class="status-tag completed">En Stock</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="status-tag pending">Agotado</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    }
 </div>

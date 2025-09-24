@@ -1,50 +1,261 @@
 ﻿@model Licorera.Models.Pedido
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Pedido";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
-
-<h4>Pedido</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="PedidoId" />
-            <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
-                <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.ClienteId"></select>
-                <span asp-validation-for="ClienteId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Fecha" class="control-label"></label>
-                <input asp-for="Fecha" class="form-control" />
-                <span asp-validation-for="Fecha" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-edit me-2"></i>Editar Pedido #@Model.PedidoId</h1>
+        <p>Modifica la información del pedido</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-info">
+            <i class="fas fa-eye me-2"></i>Ver Detalles
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+        </a>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>Información del Pedido
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" id="editOrderForm">
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Por favor, corrige los siguientes errores:</strong>
+                            <div asp-validation-summary="ModelOnly"></div>
+                        </div>
+                    }
+
+                    <input type="hidden" asp-for="PedidoId" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ClienteId" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Cliente *
+                                </label>
+                                <select asp-for="ClienteId" class="form-select" asp-items="ViewBag.ClienteId" required>
+                                    <option value="">Seleccionar cliente...</option>
+                                </select>
+                                <span asp-validation-for="ClienteId" class="text-danger"></span>
+                                <div class="form-text">
+                                    Cliente asignado al pedido
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Estado" class="form-label">
+                                    <i class="fas fa-info-circle me-1"></i>Estado del Pedido
+                                </label>
+                                <select asp-for="Estado" class="form-select">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="En Proceso">En Proceso</option>
+                                    <option value="Enviado">Enviado</option>
+                                    <option value="Completado">Completado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                                <span asp-validation-for="Estado" class="text-danger"></span>
+                                <div class="form-text">
+                                    Estado actual del pedido
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Total" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>Total del Pedido *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Total" class="form-control" placeholder="0.00" required />
+                                </div>
+                                <span asp-validation-for="Total" class="text-danger"></span>
+                                <div class="form-text">
+                                    Monto total del pedido en pesos colombianos
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Fecha" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Fecha del Pedido
+                                </label>
+                                <input asp-for="Fecha" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="Fecha" class="text-danger"></span>
+                                <div class="form-text">
+                                    Fecha y hora del pedido
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del pedido actual -->
+                    <div class="alert alert-light border">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información actual del pedido</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><strong>ID:</strong> #@Model.PedidoId</li>
+                                    <li><strong>Cliente ID:</strong> @Model.ClienteId</li>
+                                    <li><strong>Creado:</strong> @Model.Fecha?.ToString("dd/MM/yyyy HH:mm")</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><strong>Total actual:</strong> $@Model.Total.ToString("N0")</li>
+                                    <li><strong>Estado actual:</strong> 
+                                        @{
+                                            var estadoClass = Model.Estado?.ToLower() switch
+                                            {
+                                                "completado" => "badge bg-success",
+                                                "pendiente" => "badge bg-warning text-dark",
+                                                "en proceso" => "badge bg-info",
+                                                "enviado" => "badge bg-primary",
+                                                "cancelado" => "badge bg-danger",
+                                                _ => "badge bg-secondary"
+                                            };
+                                        }
+                                        <span class="@estadoClass">@Model.Estado</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-secondary">
+                            <i class="fas fa-eye me-2"></i>Ver Detalles
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                                </span>
+                                <span class="loading d-none">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Guardando...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Ayuda para Edición
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Campos editables:</h6>
+                <ul class="small">
+                    <li><strong>Cliente:</strong> Puedes cambiar el cliente asignado</li>
+                    <li><strong>Estado:</strong> Actualiza el estado del pedido</li>
+                    <li><strong>Total:</strong> Modifica el monto total</li>
+                    <li><strong>Fecha:</strong> Ajusta la fecha y hora si es necesario</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Estados disponibles:</h6>
+                <ul class="small">
+                    <li><span class="badge bg-warning text-dark">Pendiente</span> - En espera</li>
+                    <li><span class="badge bg-info">En Proceso</span> - Preparándose</li>
+                    <li><span class="badge bg-primary">Enviado</span> - En camino</li>
+                    <li><span class="badge bg-success">Completado</span> - Entregado</li>
+                    <li><span class="badge bg-danger">Cancelado</span> - Anulado</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Importante
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning small">
+                    <strong>Ten cuidado:</strong> Los cambios en el total del pedido no afectarán automáticamente los detalles de productos. Asegúrate de que coincidan.
+                </div>
+                
+                <div class="alert alert-info small">
+                    <strong>Tip:</strong> Si cambias el estado a "Completado", asegúrate de que el pedido haya sido entregado exitosamente.
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#editOrderForm').on('submit', function() {
+                const submitBtn = $('#submitBtn');
+                const btnText = submitBtn.find('.btn-text');
+                const loading = submitBtn.find('.loading');
+                
+                // Show loading state
+                btnText.addClass('d-none');
+                loading.removeClass('d-none');
+                submitBtn.prop('disabled', true);
+                
+                // Re-enable button after 5 seconds as fallback
+                setTimeout(function() {
+                    btnText.removeClass('d-none');
+                    loading.addClass('d-none');
+                    submitBtn.prop('disabled', false);
+                }, 5000);
+            });
+            
+            // Focus on first field
+            $('#ClienteId').focus();
+            
+            // Format currency input
+            $('#Total').on('input', function() {
+                let value = $(this).val().replace(/[^0-9.]/g, '');
+                if (value) {
+                    $(this).val(value);
+                }
+            });
+            
+            // Alert when changing to completed
+            $('#Estado').on('change', function() {
+                if ($(this).val() === 'Completado') {
+                    toastr.info('Asegúrate de que el pedido haya sido entregado exitosamente.', 'Estado Completado');
+                } else if ($(this).val() === 'Cancelado') {
+                    toastr.warning('El pedido será marcado como cancelado.', 'Estado Cancelado');
+                }
+            });
+        });
+    </script>
 }

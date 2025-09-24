@@ -1,0 +1,195 @@
+@model Licorera.Models.Usuario
+
+@{
+    ViewData["Title"] = "Detalles del Usuario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-user me-2"></i>Detalles del Usuario</h1>
+        <p>Información completa del usuario</p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.Rol.Nombre != "Admin")
+        {
+            <a asp-action="Edit" asp-route-id="@Model.UsuarioId" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+        }
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información General
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">ID de Usuario:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-primary">#@Model.UsuarioId</span>
+                    </dd>
+                    
+                    <dt class="col-sm-4">Nombre Completo:</dt>
+                    <dd class="col-sm-8">
+                        <strong>@Model.Nombre</strong>
+                    </dd>
+                    
+                    <dt class="col-sm-4">Email:</dt>
+                    <dd class="col-sm-8">
+                        <i class="fas fa-envelope text-muted me-2"></i>
+                        @Model.Email
+                    </dd>
+                    
+                    <dt class="col-sm-4">Rol:</dt>
+                    <dd class="col-sm-8">
+                        @{
+                            var badgeClass = Model.Rol.Nombre switch
+                            {
+                                "Admin" => "bg-warning text-dark",
+                                "Vendedor" => "bg-success",
+                                _ => "bg-secondary"
+                            };
+                            var iconClass = Model.Rol.Nombre switch
+                            {
+                                "Admin" => "fas fa-crown",
+                                "Vendedor" => "fas fa-user-tie",
+                                _ => "fas fa-user"
+                            };
+                        }
+                        <span class="badge @badgeClass">
+                            <i class="@iconClass me-1"></i>@Model.Rol.Nombre
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-4">Fecha de Registro:</dt>
+                    <dd class="col-sm-8">
+                        <i class="fas fa-calendar text-muted me-2"></i>
+                        @(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "N/A")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cog me-2"></i>Acciones Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Rol.Nombre != "Admin")
+                {
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.UsuarioId" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Usuario
+                        </a>
+                        
+                        @if (Model.Rol.Nombre != "Vendedor")
+                        {
+                            <button class="btn btn-outline-success btn-asignar-vendedor" 
+                                    data-usuario-id="@Model.UsuarioId"
+                                    data-usuario-nombre="@Model.Nombre">
+                                <i class="fas fa-user-plus me-2"></i>Hacer Vendedor
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-warning btn-revocar-vendedor" 
+                                    data-usuario-id="@Model.UsuarioId"
+                                    data-usuario-nombre="@Model.Nombre">
+                                <i class="fas fa-user-minus me-2"></i>Revocar Vendedor
+                            </button>
+                        }
+                        
+                        <a asp-action="Delete" asp-route-id="@Model.UsuarioId" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i>Eliminar Usuario
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Usuario Protegido</strong><br>
+                        Los usuarios administradores no pueden ser modificados o eliminados desde esta interfaz por seguridad.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Asignar Vendedor
+            $('.btn-asignar-vendedor').click(function() {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).data('usuario-nombre');
+                
+                if (confirm(`¿Estás seguro de que quieres hacer a ${usuarioNombre} un Vendedor?`)) {
+                    asignarVendedor(usuarioId);
+                }
+            });
+            
+            // Revocar Vendedor
+            $('.btn-revocar-vendedor').click(function() {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).data('usuario-nombre');
+                
+                if (confirm(`¿Estás seguro de que quieres revocar los permisos de Vendedor a ${usuarioNombre}?`)) {
+                    revocarVendedor(usuarioId);
+                }
+            });
+        });
+        
+        function asignarVendedor(usuarioId) {
+            $.ajax({
+                url: '@Url.Action("AsignarVendedor", "Permisos")',
+                type: 'POST',
+                data: { usuarioId: usuarioId },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al asignar el rol de vendedor');
+                }
+            });
+        }
+        
+        function revocarVendedor(usuarioId) {
+            $.ajax({
+                url: '@Url.Action("RevocarVendedor", "Permisos")',
+                type: 'POST',
+                data: { usuarioId: usuarioId },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Error al revocar el rol de vendedor');
+                }
+            });
+        }
+    </script>
+}

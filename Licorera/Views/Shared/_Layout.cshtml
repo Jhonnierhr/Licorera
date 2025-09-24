@@ -7,97 +7,328 @@
     <title>@ViewData["Title"] - Grandma's Liqueurs</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Licorera.styles.css" asp-append-version="true" />
 </head>
 
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-wine-bottle"></i>
-                <span>Grandma's Liqueurs</span>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")"
-                        asp-controller="Home" asp-action="Index">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Roles" ? "active" : "")"
-                        asp-controller="Roles" asp-action="Index">
-                        <i class="fas fa-users"></i>
-                        <span>Roles</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Compras" ? "active" : "")"
-                        asp-controller="Compras" asp-action="Index">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Compras</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Ventas" ? "active" : "")"
-                        asp-controller="Ventas" asp-action="Index">
-                        <i class="fas fa-cash-register"></i>
-                        <span>Ventas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Pedidos" ? "active" : "")"
-                        asp-controller="Pedidoes" asp-action="Index">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Pedidos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Categorias" ? "active" : "")"
-                        asp-controller="Categorias" asp-action="Index">
-                        <i class="fas fa-tags"></i>
-                        <span>Categorías</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="d-flex">
+            <!-- Sidebar for authenticated users -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-wine-bottle"></i>
+                    <span>Grandma's Liqueurs</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Home" ? "active" : "")"
+                            asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Navigation -->
-            <nav class="navbar navbar-expand navbar-light">
-                <div class="container-fluid">
-                    <div class="navbar-nav ms-auto">
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                                data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Admin</span>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Unified User Management -->
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Permisos" ? "active" : "")"
+                                asp-controller="Permisos" asp-action="Index">
+                                <i class="fas fa-users-cog"></i>
+                                <span>Gestión de Usuarios</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Compras" ? "active" : "")"
+                                asp-controller="Compras" asp-action="Index">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Compras</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Ventas" ? "active" : "")"
+                                asp-controller="Ventas" asp-action="Index">
+                                <i class="fas fa-cash-register"></i>
+                                <span>Ventas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Pedidos" ? "active" : "")"
+                                asp-controller="Pedidoes" asp-action="Index">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>Pedidos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Categorias" ? "active" : "")"
+                                asp-controller="Categorias" asp-action="Index">
+                                <i class="fas fa-tags"></i>
+                                <span>Categorías</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Productoes" ? "active" : "")"
+                                asp-controller="Productoes" asp-action="Index">
+                                <i class="fas fa-wine-bottle"></i>
+                                <span>Productos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Clientes" ? "active" : "")"
+                                asp-controller="Clientes" asp-action="Index">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Proveedores" ? "active" : "")"
+                                asp-controller="Proveedores" asp-action="Index">
+                                <i class="fas fa-truck"></i>
+                                <span>Proveedores</span>
+                            </a>
+                        </li>
+                    }
+                    else if (User.IsInRole("Vendedor"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Ventas" ? "active" : "")"
+                                asp-controller="Ventas" asp-action="Index">
+                                <i class="fas fa-cash-register"></i>
+                                <span>Gestión de Ventas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Pedidoes" ? "active" : "")"
+                                asp-controller="Pedidoes" asp-action="Index">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>Pedidos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Clientes" ? "active" : "")"
+                                asp-controller="Clientes" asp-action="Index">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Productoes" ? "active" : "")"
+                                asp-controller="Productoes" asp-action="Index">
+                                <i class="fas fa-wine-bottle"></i>
+                                <span>Productos</span>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Catalogo" ? "active" : "")"
+                                asp-controller="Catalogo" asp-action="Index">
+                                <i class="fas fa-wine-glass"></i>
+                                <span>Catálogo</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Carrito" ? "active" : "")"
+                                asp-controller="Carrito" asp-action="Index">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Mi Carrito</span>
+                                <span class="badge bg-secondary ms-2" id="carrito-contador">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "MisPedidos" ? "active" : "")"
+                                asp-controller="MisPedidos" asp-action="Index">
+                                <i class="fas fa-box"></i>
+                                <span>Mis Pedidos</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <!-- Main Content for authenticated users -->
+            <div class="main-content">
+                <nav class="navbar navbar-expand navbar-light">
+                    <div class="container-fluid">
+                        <div class="navbar-nav ms-auto">
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                                    data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>@User.Identity.Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </nav>
+                </nav>
 
-            <!-- Page Content -->
-            <div class="container-fluid content-wrapper">
-                @RenderBody()
+                <div class="container-fluid content-wrapper">
+                    @if (ViewContext.RouteData.Values["Controller"].ToString() != "Home")
+                    {
+                        <nav aria-label="breadcrumb" class="mb-4">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                                <li class="breadcrumb-item active">@ViewContext.RouteData.Values["Controller"].ToString()
+                                </li>
+                            </ol>
+                        </nav>
+                    }
+
+                    <!-- Success and Error Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @RenderBody()
+                </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <!-- Public Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-wine-bottle"></i>
+                    Grandma's Liqueurs
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about">Nosotros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#products">Productos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contacto</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary ms-2" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-primary ms-2" asp-controller="Account" asp-action="Register">
+                                <i class="fas fa-user-plus me-2"></i>Registrarse
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        @RenderBody()
+
+        <!-- Public Footer -->
+        <footer class="footer mt-auto py-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5>Grandma's Liqueurs</h5>
+                        <p>Tu tienda de licores favorita</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Enlaces Rápidos</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#about">Nosotros</a></li>
+                            <li><a href="#products">Productos</a></li>
+                            <li><a href="#contact">Contacto</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Contacto</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-phone me-2"></i> +1 234 567 890</li>
+                            <li><i class="fas fa-envelope me-2"></i> info@grandmas.com</li>
+                            <li><i class="fas fa-map-marker-alt me-2"></i> 123 Calle Principal</li>
+                        </ul>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <p>&copy; @DateTime.Now.Year - Grandma's Liqueurs</p>
+                </div>
+            </div>
+        </footer>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
+    {
+        <script>
+            $(document).ready(function() {
+                // Actualizar contador del carrito al cargar la página
+                actualizarContadorCarrito();
+                
+                // Actualizar contador cada 30 segundos (opcional)
+                setInterval(actualizarContadorCarrito, 30000);
+            });
+            
+            function actualizarContadorCarrito() {
+                $.ajax({
+                    url: '@Url.Action("ContadorCarrito", "Carrito")',
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.totalItems > 0) {
+                            $('#carrito-contador').text(response.totalItems).show();
+                        } else {
+                            $('#carrito-contador').hide();
+                        }
+                    },
+                    error: function() {
+                        // En caso de error, no mostrar el contador
+                        $('#carrito-contador').hide();
+                    }
+                });
+            }
+            
+            // Función global para que otros scripts puedan actualizar el contador
+            window.actualizarContadorCarrito = actualizarContadorCarrito;
+        </script>
+    }
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

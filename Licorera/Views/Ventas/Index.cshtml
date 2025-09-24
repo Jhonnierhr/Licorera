@@ -1,60 +1,271 @@
 ﻿@model IEnumerable<Licorera.Models.Venta>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Ventas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-cash-register me-2"></i>Gestión de Ventas</h1>
+        <p>Administra las ventas realizadas (incluye compras automáticas de clientes)</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nueva Venta Manual
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Cliente)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Usuario)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Cliente.ClienteId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Usuario.UsuarioId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.VentaId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.VentaId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.VentaId">Delete</a>
-            </td>
-        </tr>
+<!-- Resumen de ventas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-success me-3">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Total Ventas</h6>
+                        <h4 class="mb-0">@Model.Count()</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-primary me-3">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Ingresos Totales</h6>
+                        <h4 class="mb-0">$@Model.Sum(v => v.Total).ToString("N0")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-info me-3">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Ventas Completadas</h6>
+                        <h4 class="mb-0">@Model.Count(v => v.Estado == "Completada")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-warning me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-title">Ventas Pendientes</h6>
+                        <h4 class="mb-0">@Model.Count(v => v.Estado == "Pendiente")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                    <th><i class="fas fa-user me-2"></i>Cliente</th>
+                    <th><i class="fas fa-user-tie me-2"></i>Vendedor</th>
+                    <th><i class="fas fa-box me-2"></i>Productos</th>
+                    <th><i class="fas fa-dollar-sign me-2"></i>Total</th>
+                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    <th><i class="fas fa-tags me-2"></i>Origen</th>
+                    <th width="150" class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong class="text-primary">#@item.VentaId</strong>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar text-muted me-2"></i>
+                                @(item.Fecha?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div>
+                                    <strong>@item.Cliente?.Nombre</strong>
+                                    <br><small class="text-muted">@item.Cliente?.Email</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                @item.Usuario?.Nombre
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">@item.DetalleVenta?.Count() productos</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-dollar-sign text-success me-2"></i>
+                                <strong class="text-success">$@item.Total.ToString("N0")</strong>
+                            </div>
+                        </td>
+                        <td>
+                            @{
+                                var estadoClass = "";
+                                var estadoIcon = "";
+                                switch (item.Estado?.ToLower())
+                                {
+                                    case "completada":
+                                        estadoClass = "status-badge active";
+                                        estadoIcon = "fas fa-check-circle";
+                                        break;
+                                    case "pendiente":
+                                        estadoClass = "status-badge pending";
+                                        estadoIcon = "fas fa-clock";
+                                        break;
+                                    case "cancelada":
+                                        estadoClass = "status-badge inactive";
+                                        estadoIcon = "fas fa-times-circle";
+                                        break;
+                                    default:
+                                        estadoClass = "status-badge pending";
+                                        estadoIcon = "fas fa-question-circle";
+                                        break;
+                                }
+                            }
+                            <span class="@estadoClass">
+                                <i class="@estadoIcon me-1"></i>
+                                @(item.Estado ?? "N/A")
+                            </span>
+                        </td>
+                        <td>
+                            @{
+                                // Determinar si la venta fue generada automáticamente desde una compra de cliente
+                                // Si la venta está completada y fue creada el mismo día, probablemente es automática
+                                var esVentaAutomatica = item.Estado == "Completada";
+                            }
+                            @if (esVentaAutomatica)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="fas fa-shopping-cart me-1"></i>Compra Cliente
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-user-tie me-1"></i>Manual
+                                </span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@item.VentaId" 
+                                   class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (item.Estado == "Pendiente")
+                                {
+                                    <button class="btn btn-sm btn-outline-success btn-cambiar-estado" 
+                                            data-venta-id="@item.VentaId" 
+                                            data-estado="Completada"
+                                            title="Completar">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-cambiar-estado" 
+                                            data-venta-id="@item.VentaId" 
+                                            data-estado="Cancelada"
+                                            title="Cancelar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                }
+                                <a asp-action="Edit" asp-route-id="@item.VentaId" 
+                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center mt-5">
+        <div class="mb-3">
+            <i class="fas fa-cash-register text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="text-muted">No hay ventas registradas</h4>
+        <p class="text-muted">Las ventas aparecerán automáticamente cuando los clientes realicen compras, o puedes crear ventas manuales</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Primera Venta Manual
+        </a>
+    </div>
 }
-    </tbody>
-</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.btn-cambiar-estado').click(function(e) {
+                e.preventDefault();
+                var ventaId = $(this).data('venta-id');
+                var nuevoEstado = $(this).data('estado');
+                
+                var mensaje = nuevoEstado === 'Completada' ? 
+                    '¿Estás seguro de que quieres completar esta venta?' :
+                    '¿Estás seguro de que quieres cancelar esta venta?';
+                
+                if (confirm(mensaje)) {
+                    $.ajax({
+                        url: '@Url.Action("CambiarEstado", "Ventas")',
+                        type: 'POST',
+                        data: { 
+                            ventaId:ventaId, 
+                            nuevoEstado : nuevoEstado 
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function() {
+                            toastr.error('Error al cambiar el estado de la venta');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

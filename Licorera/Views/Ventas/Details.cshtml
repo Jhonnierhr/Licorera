@@ -1,49 +1,313 @@
 ﻿@model Licorera.Models.Venta
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = $"Venta #{Model.VentaId} - Detalles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Details</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-receipt me-2"></i>Venta #@Model.VentaId</h1>
+        <p>Detalles completos de la venta</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.VentaId" class="btn btn-outline-primary">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+</div>
 
-<div>
-    <h4>Venta</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fecha)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fecha)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Total)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Total)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Estado)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cliente)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cliente.ClienteId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Usuario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Usuario.UsuarioId)
-        </dd>
-    </dl>
+<div class="row">
+    <!-- Información general de la venta -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información de la Venta
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">ID de Venta:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-primary">#@Model.VentaId</span>
+                    </dd>
+                    
+                    <dt class="col-sm-5">Fecha:</dt>
+                    <dd class="col-sm-7">
+                        <i class="fas fa-calendar me-2 text-muted"></i>
+                        @(Model.Fecha?.ToString("dd/MM/yyyy HH:mm:ss") ?? "N/A")
+                    </dd>
+                    
+                    <dt class="col-sm-5">Estado:</dt>
+                    <dd class="col-sm-7">
+                        @{
+                            var estadoClass = "";
+                            var estadoIcon = "";
+                            switch (Model.Estado?.ToLower())
+                            {
+                                case "completada":
+                                    estadoClass = "status-badge active";
+                                    estadoIcon = "fas fa-check-circle";
+                                    break;
+                                case "pendiente":
+                                    estadoClass = "status-badge pending";
+                                    estadoIcon = "fas fa-clock";
+                                    break;
+                                case "cancelada":
+                                    estadoClass = "status-badge inactive";
+                                    estadoIcon = "fas fa-times-circle";
+                                    break;
+                                default:
+                                    estadoClass = "status-badge pending";
+                                    estadoIcon = "fas fa-question-circle";
+                                    break;
+                            }
+                        }
+                        <span class="@estadoClass">
+                            <i class="@estadoIcon me-1"></i>
+                            @(Model.Estado ?? "N/A")
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-5">Total:</dt>
+                    <dd class="col-sm-7">
+                        <h4 class="text-success mb-0">
+                            <i class="fas fa-dollar-sign me-1"></i>$@Model.Total.ToString("N0")
+                        </h4>
+                    </dd>
+                    
+                    <dt class="col-sm-5">Origen:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Estado == "Completada")
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-shopping-cart me-1"></i>Compra de Cliente
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-user-tie me-1"></i>Venta Manual
+                            </span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Información del cliente y vendedor -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users me-2"></i>Cliente y Vendedor
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-user me-2"></i>Cliente
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-3">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div>
+                            <strong>@Model.Cliente?.Nombre</strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-envelope me-1"></i>@Model.Cliente?.Email
+                            </small>
+                            @if (!string.IsNullOrEmpty(Model.Cliente?.Telefono))
+                            {
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-phone me-1"></i>@Model.Cliente?.Telefono
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-user-tie me-2"></i>Vendedor
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-3">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <strong>@Model.Usuario?.Nombre</strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-envelope me-1"></i>@Model.Usuario?.Email
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.VentaId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<!-- Detalles de productos -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-box me-2"></i>Productos Vendidos
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (Model.DetalleVenta != null && Model.DetalleVenta.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end">Precio Unitario</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            decimal totalGeneral = 0;
+                        }
+                        @foreach (var detalle in Model.DetalleVenta)
+                        {
+                            var subtotal = detalle.Cantidad * detalle.PrecioUnitario;
+                            totalGeneral += subtotal;
+                            
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-wrapper me-3" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-box"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@detalle.Producto?.Nombre</strong>
+                                            @if (!string.IsNullOrEmpty(detalle.Producto?.Descripcion))
+                                            {
+                                                <br><small class="text-muted">@detalle.Producto.Descripcion</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (detalle.Producto?.Categoria != null)
+                                    {
+                                        <span class="badge bg-info">@detalle.Producto.Categoria.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin categoría</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">@detalle.Cantidad</span>
+                                </td>
+                                <td class="text-end">
+                                    <strong>$@detalle.PrecioUnitario.ToString("N0")</strong>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-success">$@subtotal.ToString("N0")</strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="4" class="text-end">Total de la Venta:</th>
+                            <th class="text-end">
+                                <h5 class="text-success mb-0">$@totalGeneral.ToString("N0")</h5>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <div class="mb-3">
+                    <i class="fas fa-box text-muted" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="text-muted">No hay productos en esta venta</h5>
+                <p class="text-muted">Los detalles de productos no están disponibles</p>
+            </div>
+        }
+    </div>
 </div>
+
+<!-- Estado y acciones -->
+@if (Model.Estado == "Pendiente")
+{
+    <div class="card mt-4">
+        <div class="card-header bg-warning">
+            <h5 class="card-title mb-0 text-white">
+                <i class="fas fa-exclamation-triangle me-2"></i>Acciones Disponibles
+            </h5>
+        </div>
+        <div class="card-body">
+            <p>Esta venta está pendiente. Puedes cambiar su estado:</p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success btn-cambiar-estado" 
+                        data-venta-id="@Model.VentaId" 
+                        data-estado="Completada">
+                    <i class="fas fa-check me-2"></i>Completar Venta
+                </button>
+                <button class="btn btn-danger btn-cambiar-estado" 
+                        data-venta-id="@Model.VentaId" 
+                        data-estado="Cancelada">
+                    <i class="fas fa-times me-2"></i>Cancelar Venta
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.btn-cambiar-estado').click(function(e) {
+                e.preventDefault();
+                var ventaId = $(this).data('venta-id');
+                var nuevoEstado = $(this).data('estado');
+                
+                var mensaje = nuevoEstado === 'Completada' ? 
+                    '¿Estás seguro de que quieres completar esta venta?' :
+                    '¿Estás seguro de que quieres cancelar esta venta?';
+                
+                if (confirm(mensaje)) {
+                    $.ajax({
+                        url: '@Url.Action("CambiarEstado", "Ventas")',
+                        type: 'POST',
+                        data: { 
+                            ventaId: ventaId, 
+                            nuevoEstado: nuevoEstado 
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function() {
+                            toastr.error('Error al cambiar el estado de la venta');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
