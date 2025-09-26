@@ -8,11 +8,33 @@
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
         <h1><i class="fas fa-shopping-cart me-2"></i>Gestión de Compras</h1>
-        <p>Administra las compras a proveedores</p>
+        <p>Administra las compras a proveedores - Con sistema de margen automático</p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Nueva Compra
-    </a>
+    <div class="d-flex gap-2">
+        <a asp-controller="Configuracion" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-cogs me-2"></i>Configurar Margen
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nueva Compra
+        </a>
+    </div>
+</div>
+
+<!-- Panel de Margen de Ganancia -->
+<div class="alert alert-info d-flex align-items-center" role="alert">
+    <i class="fas fa-magic me-3" style="font-size: 1.5rem;"></i>
+    <div class="flex-grow-1">
+        <h6 class="alert-heading mb-1">Sistema de Margen Automático Activado</h6>
+        <p class="mb-0">
+            Cuando completes una compra, los precios de venta se calcularán automáticamente. 
+            <a asp-controller="Configuracion" asp-action="Index" class="alert-link">
+                <strong>Configurar porcentaje de ganancia</strong>
+            </a>
+        </p>
+    </div>
+    <div class="text-end">
+        <small class="text-muted">Margen actual: <strong id="margen-actual">Cargando...</strong></small>
+    </div>
 </div>
 
 <!-- Estadísticas rápidas -->
@@ -248,12 +270,28 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Cargar margen actual
+            $.get('@Url.Action("ObtenerMargenGanancia", "Configuracion")')
+                .done(function(margen) {
+                    $('#margen-actual').text(margen + '%');
+                })
+                .fail(function() {
+                    $('#margen-actual').text('20%'); // Valor por defecto
+                });
+
             $('.btn-cambiar-estado').click(function(e) {
                 e.preventDefault();
                 var compraId = $(this).data('compra-id');
                 var nuevoEstado = $(this).data('estado');
                 
-                if (confirm(`¿Estás seguro de que quieres cambiar el estado a "${nuevoEstado}"?`)) {
+                var mensaje = nuevoEstado === 'Completada' ? 
+                    '¿Confirmas completar esta compra? Los precios de venta se actualizarán automáticamente con el margen configurado.' :
+                    `¿Estás seguro de que quieres cambiar el estado a "${nuevoEstado}"?`;
+                
+                if (confirm(mensaje)) {
+                    var $btn = $(this);
+                    $btn.prop('disabled', true);
+                    
                     $.ajax({
                         url: '@Url.Action("CambiarEstado", "Compras")',
                         type: 'POST',
@@ -263,14 +301,24 @@
                         },
                         success: function(response) {
                             if (response.success) {
-                                toastr.success(response.message);
-                                location.reload();
+                                if (nuevoEstado === 'Completada' && response.margenAplicado) {
+                                    toastr.success(
+                                        `Compra completada. Margen del ${response.margenAplicado}% aplicado automáticamente.`,
+                                        'Precios Actualizados',
+                                        { timeOut: 5000 }
+                                    );
+                                } else {
+                                    toastr.success(response.message);
+                                }
+                                setTimeout(() => location.reload(), 1500);
                             } else {
                                 toastr.error(response.message);
+                                $btn.prop('disabled', false);
                             }
                         },
                         error: function() {
                             toastr.error('Error al cambiar el estado de la compra');
+                            $btn.prop('disabled', false);
                         }
                     });
                 }

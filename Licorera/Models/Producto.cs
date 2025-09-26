@@ -13,6 +13,9 @@ public partial class Producto
 
     public decimal Precio { get; set; }
 
+    // DESCOMENTA esta línea DESPUÉS de ejecutar el script SQL:
+    // public decimal? PrecioCompra { get; set; }
+
     public int Stock { get; set; }
 
     public int? CategoriaId { get; set; }

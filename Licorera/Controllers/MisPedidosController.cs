@@ -1,8 +1,10 @@
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Licorera.Models;
-using System.Security.Claims;
 
 namespace Licorera.Controllers
 {
@@ -18,19 +20,21 @@ namespace Licorera.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Obtener el ID del cliente actual
             var userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
             var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Email == userEmail);
 
             if (cliente == null)
             {
-                return View(new List<Pedido>());
+                TempData["ErrorMessage"] = "Cliente no encontrado.";
+                return RedirectToAction("Index", "Home");
             }
 
+            // Mostrar TODOS los pedidos del cliente, incluyendo los eliminados por admin
+            // El cliente debe poder ver su historial completo
             var pedidos = await _context.Pedidos
-                .Include(p => p.DetallePedidos)
-                .ThenInclude(dp => dp.Producto)
                 .Where(p => p.ClienteId == cliente.ClienteId)
+                .Include(p => p.DetallePedidos)
+                    .ThenInclude(d => d.Producto)
                 .OrderByDescending(p => p.Fecha)
                 .ToListAsync();
 
@@ -39,25 +43,27 @@ namespace Licorera.Controllers
 
         public async Task<IActionResult> Detalles(int id)
         {
-            // Obtener el ID del cliente actual
             var userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
             var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Email == userEmail);
 
             if (cliente == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Cliente no encontrado.";
+                return RedirectToAction("Index", "Home");
             }
 
+            // Permitir ver detalles de cualquier pedido del cliente, incluso si fue eliminado por admin
             var pedido = await _context.Pedidos
+                .Where(p => p.ClienteId == cliente.ClienteId && p.PedidoId == id)
                 .Include(p => p.DetallePedidos)
-                .ThenInclude(dp => dp.Producto)
-                .ThenInclude(p => p.Categoria)
-                .Include(p => p.Cliente)
-                .FirstOrDefaultAsync(p => p.PedidoId == id && p.ClienteId == cliente.ClienteId);
+                    .ThenInclude(d => d.Producto)
+                        .ThenInclude(pr => pr.Categoria)
+                .FirstOrDefaultAsync();
 
             if (pedido == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pedido no encontrado.";
+                return RedirectToAction("Index");
             }
 
             return View(pedido);
@@ -80,6 +86,12 @@ namespace Licorera.Controllers
             if (pedido == null)
             {
                 return Json(new { success = false, message = "Pedido no encontrado" });
+            }
+
+            // No permitir cancelar pedidos que ya fueron eliminados por admin
+            if (pedido.EliminadoPorAdmin)
+            {
+                return Json(new { success = false, message = "Este pedido ya no puede ser modificado" });
             }
 
             if (pedido.Estado == "Completado" || pedido.Estado == "Cancelado")

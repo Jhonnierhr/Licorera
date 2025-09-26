@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Licorera.Models;
+using Licorera.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,13 @@ builder.Services.AddControllersWithViews();
 // Configurar la conexión a la base de datos
 builder.Services.AddDbContext<GestionNegocioContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configurar settings de email
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<AdminNotificationSettings>(builder.Configuration.GetSection("AdminNotification"));
+
+// Registrar servicio de email
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Configurar sesiones para el carrito de compras
 builder.Services.AddDistributedMemoryCache();
@@ -112,9 +120,33 @@ using (var scope = app.Services.CreateScope())
                 };
                 
                 context.Usuarios.Add(adminUser);
-                context.SaveChanges();
             }
         }
+
+        // Crear administrador adicional con email personalizado
+        if (!context.Usuarios.Any(u => u.Email == "jhonnierhr08@gmail.com"))
+        {
+            var adminRole = context.Roles.First(r => r.Nombre == "Admin");
+            
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes("Admin123!"));
+                var passwordHash = Convert.ToBase64String(hashedBytes);
+                
+                var personalAdminUser = new Usuario
+                {
+                    Nombre = "Jhonnier Administrator",
+                    Email = "jhonnierhr08@gmail.com",
+                    PasswordHash = passwordHash,
+                    RolId = adminRole.RolId,
+                    CreatedAt = DateTime.Now
+                };
+                
+                context.Usuarios.Add(personalAdminUser);
+            }
+        }
+
+        context.SaveChanges();
     }
     catch (Exception ex)
     {

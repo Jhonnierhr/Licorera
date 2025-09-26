@@ -30,11 +30,23 @@
         .login-container {
             background: white;
             border-radius: 1.5rem;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
             width: 100%;
             max-width: 450px;
             padding: 2.5rem;
             animation: slideIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-secondary);
         }
         
         @@keyframes slideIn {
@@ -55,7 +67,10 @@
         
         .login-header i {
             font-size: 3.5rem;
-            color: var(--secondary-color);
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -79,43 +94,82 @@
         }
         
         .login-form .input-group-text {
-            background-color: var(--light-bg);
-            border: 1px solid #dee2e6;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
             color: var(--text-color);
-            border-radius: 0.5rem 0 0 0.5rem;
+            border-radius: 0.75rem 0 0 0.75rem;
             width: 50px;
             justify-content: center;
+            transition: all 0.3s ease;
         }
         
         .login-form .form-control {
             border-left: none;
-            border-radius: 0 0.5rem 0.5rem 0;
-            padding: 0.75rem 1rem;
+            border-radius: 0 0.75rem 0.75rem 0;
+            padding: 0.875rem 1rem;
             font-size: 1rem;
             transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .login-form .input-group:focus-within .input-group-text {
+            border-color: var(--secondary-color);
+            background: linear-gradient(135deg, rgba(228, 185, 79, 0.1) 0%, rgba(246, 213, 92, 0.1) 100%);
+            color: var(--secondary-color);
         }
         
         .login-form .form-control:focus {
             border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(228, 185, 79, 0.25);
+            outline: none;
         }
         
         .btn-login {
             width: 100%;
-            padding: 0.875rem;
-            font-weight: 600;
+            padding: 1rem;
+            font-weight: 700;
             font-size: 1.1rem;
-            margin-top: 1rem;
-            border-radius: 0.5rem;
-            background: linear-gradient(45deg, var(--primary-color), #1a5f7a);
+            margin-top: 1.5rem;
+            border-radius: 0.75rem;
+            background: var(--gradient-primary);
             border: none;
-            transition: all 0.3s ease;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-secondary);
+            transition: left 0.4s ease;
+        }
+
         .btn-login:hover {
-            background: linear-gradient(45deg, #1a5f7a, var(--primary-color));
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(26, 28, 35, 0.3);
+            color: var(--primary-color);
+        }
+
+        .btn-login:hover::before {
+            left: 0;
+        }
+
+        .btn-login .btn-text,
+        .btn-login .loading {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-login:active {
+            transform: translateY(-1px);
         }
         
         .form-check {
@@ -136,38 +190,72 @@
             color: var(--primary-color);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
         }
         
         .forgot-password a:hover {
             color: var(--secondary-color);
+            background-color: rgba(228, 185, 79, 0.1);
         }
         
         .register-link {
             text-align: center;
             margin-top: 2rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #dee2e6;
+            border-top: 1px solid #e2e8f0;
         }
         
         .register-link a {
-            color: var(--secondary-color);
+            background: var(--gradient-primary);
+            color: white;
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            border-radius: 2rem;
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .register-link a::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
         .register-link a:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(26, 28, 35, 0.3);
+            background: var(--gradient-secondary);
             color: var(--primary-color);
+        }
+
+        .register-link a:hover::before {
+            width: 200px;
+            height: 200px;
         }
         
         .validation-summary {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 1px solid #f87171;
+            color: #dc2626;
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(248, 113, 113, 0.2);
         }
         
         .text-danger {
@@ -180,24 +268,50 @@
         }
         
         .btn-login.loading {
-            opacity: 0.7;
+            opacity: 0.8;
             cursor: not-allowed;
         }
         
         .auto-role-info {
-            background-color: #e3f2fd;
-            border: 1px solid #bbdefb;
-            color: #0d47a1;
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            border: 1px solid #03a9f4;
+            color: #01579b;
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
             text-align: center;
+            box-shadow: 0 4px 10px rgba(3, 169, 244, 0.15);
         }
         
         .auto-role-info i {
             margin-right: 0.5rem;
-            color: #1976d2;
+            color: #0277bd;
+        }
+
+        .demo-credentials {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #f8fafc 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .demo-credentials:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .demo-credentials h6 {
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .demo-credentials small {
+            color: var(--text-color);
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -265,16 +379,16 @@
         </form>
 
         <div class="register-link">
-            <p class="mb-2 text-muted">¿No tienes una cuenta?</p>
+            <p class="mb-3 text-muted">¿No tienes una cuenta?</p>
             <a asp-controller="Account" asp-action="Register">
-                <i class="fas fa-user-plus me-2"></i>Regístrate aquí
+                <i class="fas fa-user-plus me-2"></i>Registrarse
             </a>
         </div>
 
         <!-- Demo Credentials Info -->
-        <div class="mt-4 p-3 bg-light rounded">
-            <h6 class="text-muted mb-2"><i class="fas fa-key me-2"></i>Credenciales de Prueba:</h6>
-            <small class="text-muted">
+        <div class="demo-credentials">
+            <h6><i class="fas fa-key me-2"></i>Credenciales de Prueba:</h6>
+            <small>
                 <strong>Administrador:</strong><br>
                 Email: admin@grandmasliqueurs.com<br>
                 Contraseña: Admin123!
@@ -343,6 +457,12 @@
 
             // Focus on email field when page loads
             $('#Email').focus();
+
+            // Add subtle animations
+            $('.input-group').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+                $(this).addClass('animate__animated animate__fadeInUp');
+            });
         });
 
         function showForgotPasswordAlert() {
@@ -361,7 +481,7 @@
         }
 
         // Add double-click event to demo credentials for quick fill
-        $('.bg-light').on('dblclick', fillAdminCredentials);
+        $('.demo-credentials').on('dblclick', fillAdminCredentials);
     </script>
     
     @await Html.PartialAsync("_ValidationScriptsPartial")

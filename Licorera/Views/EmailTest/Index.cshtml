@@ -1,0 +1,239 @@
+@{
+    ViewData["Title"] = "Prueba de Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <!-- Estado de la Configuración -->
+            <div class="card mb-4 @(ViewBag.EmailConfigured ? "border-success" : "border-warning")">
+                <div class="card-header @(ViewBag.EmailConfigured ? "bg-success" : "bg-warning") text-white">
+                    <h5 class="mb-0">
+                        <i class="fas @(ViewBag.EmailConfigured ? "fa-check-circle" : "fa-exclamation-triangle") me-2"></i>
+                        ?? Diagnóstico de Configuración
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>?? Configuración SMTP</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Servidor:</strong> gmail.com ?</li>
+                                <li><strong>Puerto:</strong> 587 ?</li>
+                                <li><strong>SSL:</strong> Habilitado ?</li>
+                                <li><strong>Email remitente:</strong> @ViewBag.SenderEmail</li>
+                                <li><strong>Contraseña:</strong> @ViewBag.CurrentPassword @(ViewBag.EmailConfigured ? "?" : "?")</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>?? Configuración de Destinos</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Email admin:</strong> @ViewBag.AdminEmail</li>
+                                <li><strong>Nombre admin:</strong> Jhonnier Administrator</li>
+                            </ul>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-info btn-sm" onclick="loadDiagnosticInfo()">
+                                    <i class="fas fa-info-circle me-1"></i>Ver Diagnóstico Completo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        Sistema de Pruebas de Notificaciones por Email
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <p class="mb-0 mt-2"><strong>?? Sugerencia:</strong> Revisa los logs de la aplicación para más detalles del error.</p>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <!-- Prueba Email Administrador -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-shield me-2"></i>
+                                        Email al Administrador
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>?? Destino:</strong> @ViewBag.AdminEmail</p>
+                                    <p>Prueba el envío de notificaciones al administrador cuando se registra un cliente.</p>
+                                    
+                                    <form asp-action="SendTestEmail" method="post">
+                                        <button type="submit" class="btn btn-warning w-100">
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            Probar Email Administrador
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prueba Email Cliente -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        Email de Bienvenida
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>?? Destino:</strong> @ViewBag.SenderEmail</p>
+                                    <p>Prueba el email de bienvenida que reciben los clientes.</p>
+                                    
+                                    <form asp-action="SendWelcomeTestEmail" method="post">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-heart me-2"></i>
+                                            Probar Email Bienvenida
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prueba Directa -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-bullseye me-2"></i>
+                                        Prueba Directa
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form asp-action="TestDirectEmailToClient" method="post">
+                                        <div class="mb-3">
+                                            <label for="testEmail" class="form-label">Email de destino:</label>
+                                            <input type="email" class="form-control" name="testEmail" value="@ViewBag.SenderEmail" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-info w-100">
+                                            <i class="fas fa-rocket me-2"></i>
+                                            Enviar Prueba Directa
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de diagnóstico -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">?? Diagnóstico y Soluciones</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>? Lista de Verificación</h6>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">Contraseña de aplicación configurada</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">SMTP Gmail configurado</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">SSL habilitado</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">Servicio registrado en Program.cs</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>?? Posibles Problemas</h6>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-shield-alt text-warning me-2"></i>Firewall bloqueando puerto 587</li>
+                                                <li><i class="fas fa-lock text-danger me-2"></i>2FA no habilitado en Gmail</li>
+                                                <li><i class="fas fa-key text-info me-2"></i>Contraseña de aplicación incorrecta</li>
+                                                <li><i class="fas fa-envelope text-muted me-2"></i>Emails llegando a spam</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Información de diagnóstico en tiempo real -->
+                                    <div class="mt-3">
+                                        <div id="diagnosticInfo" class="collapse">
+                                            <div class="alert alert-light">
+                                                <h6>?? Información Técnica</h6>
+                                                <pre id="diagnosticData" class="mb-0"></pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instrucciones paso a paso -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">?? Plan de Acción para Solucionar</h6>
+                                <ol>
+                                    <li><strong>Verifica Gmail:</strong> Asegúrate de que la cuenta jhonnierhr08@gmail.com tenga 2FA habilitado</li>
+                                    <li><strong>Prueba las funciones:</strong> Haz clic en cada botón de prueba y revisa los resultados</li>
+                                    <li><strong>Revisa logs:</strong> Consulta la consola de la aplicación para errores específicos</li>
+                                    <li><strong>Verifica carpeta spam:</strong> Los emails podrían estar llegando a spam</li>
+                                    <li><strong>Prueba con otro email:</strong> Usa la "Prueba Directa" con un email diferente</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadDiagnosticInfo() {
+            fetch('/EmailTest/DiagnosticInfo')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('diagnosticData').textContent = JSON.stringify(data, null, 2);
+                    const diagnosticDiv = document.getElementById('diagnosticInfo');
+                    diagnosticDiv.classList.toggle('collapse');
+                })
+                .catch(error => {
+                    document.getElementById('diagnosticData').textContent = 'Error al cargar información de diagnóstico: ' + error;
+                    document.getElementById('diagnosticInfo').classList.remove('collapse');
+                });
+        }
+    </script>
+}

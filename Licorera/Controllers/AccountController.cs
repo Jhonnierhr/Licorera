@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Licorera.ViewModels;
 using Licorera.Models;
+using Licorera.Services;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,11 +16,19 @@ namespace Licorera.Controllers
     {
         private readonly GestionNegocioContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(GestionNegocioContext context, IConfiguration configuration)
+        public AccountController(
+            GestionNegocioContext context, 
+            IConfiguration configuration,
+            IEmailService emailService,
+            ILogger<AccountController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -182,12 +191,61 @@ namespace Licorera.Controllers
 
                         await transaction.CommitAsync();
 
-                        TempData["SuccessMessage"] = $"¡Registro exitoso! Bienvenido {usuario.Nombre}. Ya puedes iniciar sesión con tus credenciales.";
+                        // Enviar emails de notificación
+                        try
+                        {
+                            _logger.LogInformation($"Iniciando envío de emails para nuevo cliente: {usuario.Email}");
+
+                            // Email al administrador
+                            try
+                            {
+                                await _emailService.SendNewUserNotificationToAdminAsync(
+                                    usuario.Nombre,
+                                    usuario.Email,
+                                    model.Telefono,
+                                    model.Direccion
+                                );
+                                _logger.LogInformation($"? Notificación de administrador enviada exitosamente para: {usuario.Email}");
+                            }
+                            catch (Exception adminEmailEx)
+                            {
+                                _logger.LogError(adminEmailEx, $"? Error específico al enviar email al administrador para: {usuario.Email}");
+                            }
+
+                            // Email de bienvenida al cliente
+                            try
+                            {
+                                await _emailService.SendWelcomeEmailToClientAsync(
+                                    usuario.Nombre,
+                                    usuario.Email
+                                );
+                                _logger.LogInformation($"? Email de bienvenida enviado exitosamente al cliente: {usuario.Email}");
+                            }
+                            catch (Exception clientEmailEx)
+                            {
+                                _logger.LogError(clientEmailEx, $"? Error específico al enviar email de bienvenida al cliente: {usuario.Email} - Detalles: {clientEmailEx.Message}");
+                                
+                                // Log adicional para debugging
+                                _logger.LogError($"? Stack trace del error de email de cliente: {clientEmailEx.StackTrace}");
+                            }
+                        }
+                        catch (Exception emailEx)
+                        {
+                            _logger.LogError(emailEx, $"? Error general al enviar notificaciones de email para el nuevo cliente: {usuario.Email}");
+                            // No fallar el registro si hay problemas con el email
+                        }
+
+                        TempData["SuccessMessage"] = $"¡Registro exitoso! Bienvenido {usuario.Nombre}. " +
+                            $"?? Hemos enviado un email de bienvenida a {usuario.Email}. " +
+                            $"Si no lo ves en unos minutos, revisa tu carpeta de spam. " +
+                            $"Ya puedes iniciar sesión con tus credenciales.";
+
                         return RedirectToAction(nameof(Login));
                     }
                     catch (Exception ex)
                     {
                         await transaction.RollbackAsync();
+                        _logger.LogError(ex, $"Error al crear la cuenta para: {model.Email}");
                         TempData["ErrorMessage"] = "Error al crear la cuenta. Por favor, intente nuevamente.";
                         ModelState.AddModelError(string.Empty, "Error al crear la cuenta. Por favor, intente nuevamente.");
                     }
@@ -232,33 +290,52 @@ namespace Licorera.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> VerifyAdmin()
         {
-            var adminUser = await _context.Usuarios
+            var adminUsers = await _context.Usuarios
                 .Include(u => u.Rol)
-                .FirstOrDefaultAsync(u => u.Email == "admin@grandmasliqueurs.com");
+                .Where(u => u.Rol.Nombre == "Admin")
+                .ToListAsync();
 
-            if (adminUser != null)
+            var results = new List<object>();
+
+            foreach (var adminUser in adminUsers)
             {
                 var testPassword = "Admin123!";
                 var testHash = HashPassword(testPassword);
                 
-                return Json(new
+                results.Add(new
                 {
-                    UserExists = true,
                     Email = adminUser.Email,
+                    Name = adminUser.Nombre,
                     Role = adminUser.Rol?.Nombre,
                     PasswordMatches = adminUser.PasswordHash == testHash,
-                    StoredHash = adminUser.PasswordHash,
-                    TestHash = testHash,
                     Message = adminUser.PasswordHash == testHash ? 
-                        "Credenciales correctas: admin@grandmasliqueurs.com / Admin123!" : 
+                        $"Credenciales correctas: {adminUser.Email} / Admin123!" : 
                         "Las credenciales no coinciden"
                 });
             }
 
-            return Json(new 
-            { 
-                UserExists = false, 
-                Message = "Usuario administrador no encontrado. Reinicie la aplicación para crearlo automáticamente." 
+            if (!results.Any())
+            {
+                return Json(new 
+                { 
+                    Message = "No se encontraron usuarios administradores. Reinicie la aplicación para crearlos automáticamente.",
+                    AdminUsers = results
+                });
+            }
+
+            return Json(new
+            {
+                Message = "Usuarios administradores encontrados:",
+                AdminUsers = results,
+                Instructions = new
+                {
+                    LoginUrl = "/Account/Login",
+                    SuggestedCredentials = new[]
+                    {
+                        new { Email = "admin@grandmasliqueurs.com", Password = "Admin123!" },
+                        new { Email = "jhonnierhr08@gmail.com", Password = "Admin123!" }
+                    }
+                }
             });
         }
     }

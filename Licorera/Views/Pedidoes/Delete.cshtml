@@ -26,7 +26,9 @@
             <div class="card-body">
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-circle me-2"></i>
-                    <strong>¡Atención!</strong> Esta acción no se puede deshacer. Se eliminarán tanto el pedido como todos sus productos asociados.
+                    <strong>¡Atención!</strong> Al eliminar este pedido, se archivará del panel de administración, 
+                    pero <strong>el cliente aún podrá verlo</strong> en su historial personal ("Mis Pedidos") 
+                    para sus registros.
                 </div>
                 
                 <!-- Información del pedido -->
@@ -164,20 +166,20 @@
             <div class="card-body">
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <i class="fas fa-times-circle text-danger me-2"></i>
-                        <strong>Eliminación permanente:</strong> No podrás recuperar este pedido
+                        <i class="fas fa-archive text-info me-2"></i>
+                        <strong>Archivado administrativo:</strong> Se oculta del panel de administración
                     </li>
                     <li class="mb-2">
-                        <i class="fas fa-box text-warning me-2"></i>
-                        <strong>Productos asociados:</strong> Se eliminarán todos los detalles
+                        <i class="fas fa-user text-success me-2"></i>
+                        <strong>Historial del cliente:</strong> El cliente conserva acceso para sus registros
                     </li>
                     <li class="mb-2">
-                        <i class="fas fa-chart-bar text-info me-2"></i>
-                        <strong>Estadísticas:</strong> Afectará los reportes históricos
+                        <i class="fas fa-chart-bar text-warning me-2"></i>
+                        <strong>Estadísticas:</strong> No contará en estadísticas administrativas
                     </li>
                     <li class="mb-0">
-                        <i class="fas fa-user text-primary me-2"></i>
-                        <strong>Cliente:</strong> El cliente seguirá existiendo
+                        <i class="fas fa-undo text-muted me-2"></i>
+                        <strong>Reversible:</strong> Puedes restaurarlo desde la base de datos si es necesario
                     </li>
                 </ul>
             </div>

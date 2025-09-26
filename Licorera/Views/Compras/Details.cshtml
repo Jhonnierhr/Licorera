@@ -247,7 +247,13 @@
                     <div class="alert alert-success">
                         <i class="fas fa-check-circle me-2"></i>
                         <strong>Compra Completada</strong><br>
-                        El stock de los productos ha sido actualizado automáticamente.
+                        El stock de los productos ha sido actualizado automáticamente y los precios de venta fueron recalculados aplicando el margen de ganancia configurado.
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-percentage me-2"></i>
+                        <strong>Sistema de Margen Automático:</strong> Los precios de venta se actualizaron automáticamente con el margen configurado.
+                        <br><small>Para modificar el porcentaje de ganancia, ve a <a asp-controller="Configuracion" asp-action="Index" class="alert-link">Configuración del Sistema</a>.</small>
                     </div>
                 }
                 

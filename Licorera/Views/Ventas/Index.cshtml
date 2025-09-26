@@ -90,7 +90,10 @@
                     <th><i class="fas fa-user-tie me-2"></i>Vendedor</th>
                     <th><i class="fas fa-box me-2"></i>Productos</th>
                     <th><i class="fas fa-dollar-sign me-2"></i>Total</th>
-                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    @if (!User.IsInRole("Admin"))
+                    {
+                        <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    }
                     <th><i class="fas fa-tags me-2"></i>Origen</th>
                     <th width="150" class="text-center">Acciones</th>
                 </tr>
@@ -136,37 +139,41 @@
                                 <strong class="text-success">$@item.Total.ToString("N0")</strong>
                             </div>
                         </td>
-                        <td>
-                            @{
-                                var estadoClass = "";
-                                var estadoIcon = "";
-                                switch (item.Estado?.ToLower())
-                                {
-                                    case "completada":
-                                        estadoClass = "status-badge active";
-                                        estadoIcon = "fas fa-check-circle";
-                                        break;
-                                    case "pendiente":
-                                        estadoClass = "status-badge pending";
-                                        estadoIcon = "fas fa-clock";
-                                        break;
-                                    case "cancelada":
-                                        estadoClass = "status-badge inactive";
-                                        estadoIcon = "fas fa-times-circle";
-                                        break;
-                                    default:
-                                        estadoClass = "status-badge pending";
-                                        estadoIcon = "fas fa-question-circle";
-                                        break;
+                        @if (!User.IsInRole("Admin"))
+                        {
+                            <td>
+                                @{ 
+                                    // Solo mostrar estado si el usuario no es administrador
+                                    var estadoClass = "";
+                                    var estadoIcon = "";
+                                    switch (item.Estado?.ToLower())
+                                    {
+                                        case "completada":
+                                            estadoClass = "status-badge active";
+                                            estadoIcon = "fas fa-check-circle";
+                                            break;
+                                        case "pendiente":
+                                            estadoClass = "status-badge pending";
+                                            estadoIcon = "fas fa-clock";
+                                            break;
+                                        case "cancelada":
+                                            estadoClass = "status-badge inactive";
+                                            estadoIcon = "fas fa-times-circle";
+                                            break;
+                                        default:
+                                            estadoClass = "status-badge pending";
+                                            estadoIcon = "fas fa-question-circle";
+                                            break;
+                                    }
                                 }
-                            }
-                            <span class="@estadoClass">
-                                <i class="@estadoIcon me-1"></i>
-                                @(item.Estado ?? "N/A")
-                            </span>
-                        </td>
+                                <span class="@estadoClass">
+                                    <i class="@estadoIcon me-1"></i>
+                                    @(item.Estado ?? "N/A")
+                                </span>
+                            </td>
+                        }
                         <td>
-                            @{
+                            @{ 
                                 // Determinar si la venta fue generada automáticamente desde una compra de cliente
                                 // Si la venta está completada y fue creada el mismo día, probablemente es automática
                                 var esVentaAutomatica = item.Estado == "Completada";
@@ -190,7 +197,7 @@
                                    class="btn btn-sm btn-outline-info" title="Ver detalles">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if (item.Estado == "Pendiente")
+                                @if (item.Estado == "Pendiente" && !User.IsInRole("Admin"))
                                 {
                                     <button class="btn btn-sm btn-outline-success btn-cambiar-estado" 
                                             data-venta-id="@item.VentaId" 

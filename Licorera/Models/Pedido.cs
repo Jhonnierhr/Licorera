@@ -15,6 +15,8 @@ public partial class Pedido
 
     public string? Estado { get; set; }
 
+    public bool EliminadoPorAdmin { get; set; } = false;
+
     public virtual Cliente Cliente { get; set; } = null!;
 
     public virtual ICollection<DetallePedido> DetallePedidos { get; set; } = new List<DetallePedido>();

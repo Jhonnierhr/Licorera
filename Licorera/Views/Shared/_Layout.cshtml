@@ -12,10 +12,10 @@
     <link rel="stylesheet" href="~/Licorera.styles.css" asp-append-version="true" />
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     @if (User.Identity.IsAuthenticated)
     {
-        <div class="d-flex">
+        <div class="d-flex flex-fill">
             <!-- Sidebar for authenticated users -->
             <div class="sidebar">
                 <div class="sidebar-header">
@@ -90,6 +90,22 @@
                                 <span>Proveedores</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Configuracion" ? "active" : "")"
+                                asp-controller="Configuracion" asp-action="Index">
+                                <i class="fas fa-cogs"></i>
+                                <span>Configuración</span>
+                            </a>
+                        </li>
+                        <!-- Enlace de prueba de emails (solo para desarrollo/testing) -->
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "EmailTest" ? "active" : "")"
+                                asp-controller="EmailTest" asp-action="Index">
+                                <i class="fas fa-envelope-open-text"></i>
+                                <span>Prueba de Emails</span>
+                                <small class="text-muted d-block ms-4">🧪 Test</small>
+                            </a>
+                        </li>
                     }
                     else if (User.IsInRole("Vendedor"))
                     {
@@ -151,7 +167,7 @@
             </div>
 
             <!-- Main Content for authenticated users -->
-            <div class="main-content">
+            <div class="main-content flex-fill">
                 <nav class="navbar navbar-expand navbar-light">
                     <div class="container-fluid">
                         <div class="navbar-nav ms-auto">
@@ -216,78 +232,95 @@
     }
     else
     {
-        <!-- Public Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-wine-bottle"></i>
-                    Grandma's Liqueurs
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#about">Nosotros</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#products">Productos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">Contacto</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-primary ms-2" asp-controller="Account" asp-action="Login">
-                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-outline-primary ms-2" asp-controller="Account" asp-action="Register">
-                                <i class="fas fa-user-plus me-2"></i>Registrarse
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        @RenderBody()
-
-        <!-- Public Footer -->
-        <footer class="footer mt-auto py-3">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-4">
-                        <h5>Grandma's Liqueurs</h5>
-                        <p>Tu tienda de licores favorita</p>
-                    </div>
-                    <div class="col-md-4">
-                        <h5>Enlaces Rápidos</h5>
-                        <ul class="list-unstyled">
-                            <li><a href="#about">Nosotros</a></li>
-                            <li><a href="#products">Productos</a></li>
-                            <li><a href="#contact">Contacto</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h5>Contacto</h5>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-phone me-2"></i> +1 234 567 890</li>
-                            <li><i class="fas fa-envelope me-2"></i> info@grandmas.com</li>
-                            <li><i class="fas fa-map-marker-alt me-2"></i> 123 Calle Principal</li>
+        <div class="d-flex flex-column flex-fill">
+            <!-- Public Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-dark">
+                <div class="container">
+                    <a class="navbar-brand" href="/">
+                        <i class="fas fa-wine-bottle"></i>
+                        Grandma's Liqueurs
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#about">Nosotros</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#products">Productos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#contact">Contacto</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-primary ms-2" asp-controller="Account" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-primary ms-2" asp-controller="Account" asp-action="Register">
+                                    <i class="fas fa-user-plus me-2"></i>Registrarse
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
-                <hr>
-                <div class="text-center">
-                    <p>&copy; @DateTime.Now.Year - Grandma's Liqueurs</p>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="flex-grow-1">
+                @RenderBody()
+            </main>
+
+            <!-- Public Footer -->
+            <footer class="footer">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5><i class="fas fa-wine-bottle me-2"></i>Grandma's Liqueurs</h5>
+                            <p>Tu tienda de licores favorita, ofreciendo la mejor selección de bebidas premium y artesanales.</p>
+                            <div class="social-links mt-3">
+                                <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Enlaces Rápidos</h5>
+                            <ul class="list-unstyled">
+                                <li><a href="#about"><i class="fas fa-chevron-right me-2"></i>Nosotros</a></li>
+                                <li><a href="#products"><i class="fas fa-chevron-right me-2"></i>Productos</a></li>
+                                <li><a href="#contact"><i class="fas fa-chevron-right me-2"></i>Contacto</a></li>
+                                <li><a asp-controller="Account" asp-action="Login"><i class="fas fa-chevron-right me-2"></i>Iniciar Sesión</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Contacto</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-phone me-2"></i> +57 123 456 7890</li>
+                                <li><i class="fas fa-envelope me-2"></i> info@grandmasliqueurs.com</li>
+                                <li><i class="fas fa-map-marker-alt me-2"></i> Bogotá, Colombia</li>
+                                <li><i class="fas fa-clock me-2"></i> Lun - Sáb: 9:00 AM - 8:00 PM</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p class="mb-0">&copy; @DateTime.Now.Year - Grandma's Liqueurs. Todos los derechos reservados.</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small>Desarrollado con <i class="fas fa-heart text-danger"></i> para amantes de los licores</small>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </footer>
+            </footer>
+        </div>
     }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

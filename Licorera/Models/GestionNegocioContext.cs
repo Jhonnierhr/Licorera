@@ -21,6 +21,8 @@ public partial class GestionNegocioContext : DbContext
 
     public virtual DbSet<Compra> Compras { get; set; }
 
+    public virtual DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
+
     public virtual DbSet<DetalleCompra> DetalleCompras { get; set; }
 
     public virtual DbSet<DetallePedido> DetallePedidos { get; set; }
@@ -38,10 +40,6 @@ public partial class GestionNegocioContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<Venta> Ventas { get; set; }
-
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Server=DESKTOP-O3705S8\\SQLEXPRESS;Initial Catalog=GestionNegocio;integrated security=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -328,6 +326,23 @@ public partial class GestionNegocioContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Ventas__usuario___59063A47");
         });
+
+        // Configuración explícita para ConfiguracionSistema
+        modelBuilder.Entity<ConfiguracionSistema>(entity =>
+        {
+            entity.HasKey(e => e.ConfiguracionId);
+            entity.Property(e => e.ConfiguracionId).ValueGeneratedOnAdd();
+            entity.Property(e => e.Clave).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Valor).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Descripcion).HasMaxLength(200);
+            entity.HasIndex(e => e.Clave).IsUnique();
+        });
+
+        // Configuración para Producto - comentada temporalmente hasta agregar columna
+        // modelBuilder.Entity<Producto>(entity =>
+        // {
+        //     entity.Property(e => e.PrecioCompra).HasColumnType("decimal(18,2)");
+        // });
 
         OnModelCreatingPartial(modelBuilder);
     }

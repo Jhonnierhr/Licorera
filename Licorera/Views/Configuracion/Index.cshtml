@@ -1,0 +1,250 @@
+@model IEnumerable<Licorera.Models.ConfiguracionSistema>
+
+@{
+    ViewData["Title"] = "Configuración del Sistema";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1><i class="fas fa-cogs me-2"></i>Configuración del Sistema</h1>
+        <p>Administra las configuraciones globales del sistema, especialmente el margen de ganancia automático</p>
+    </div>
+    <a asp-controller="Compras" asp-action="Index" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Volver a Compras
+    </a>
+</div>
+
+<!-- Panel Principal de Margen de Ganancia -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-percentage me-2"></i>Configuración de Margen de Ganancia Automático
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>¿Cómo funciona?</strong> Cuando completes una compra a proveedores, los precios de venta de los productos se actualizarán automáticamente agregando este porcentaje de ganancia al precio de compra.
+                </div>
+                
+                @{
+                    var margenActual = Model.FirstOrDefault(c => c.Clave == "MARGEN_GANANCIA");
+                    var porcentajeActual = margenActual != null && decimal.TryParse(margenActual.Valor, out decimal valor) ? valor : 20m;
+                }
+                
+                <form id="margenGananciaForm" class="mb-4">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="porcentajeGanancia" class="form-label">
+                                <strong><i class="fas fa-chart-line me-1"></i>Porcentaje de Ganancia (%)</strong>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" id="porcentajeGanancia" 
+                                       value="@porcentajeActual" min="0" max="200" step="0.01" required>
+                                <span class="input-group-text bg-primary text-white">%</span>
+                            </div>
+                            <small class="form-text text-success">
+                                <i class="fas fa-check-circle me-1"></i>Valor actual: <strong>@porcentajeActual%</strong>
+                            </small>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Actualizar Margen
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded border">
+                                <h6 class="text-primary mb-2">
+                                    <i class="fas fa-calculator me-1"></i>Simulación en Tiempo Real:
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <small class="text-muted d-block">Precio Compra</small>
+                                        <strong class="text-dark">$50.000</strong>
+                                    </div>
+                                    <div class="col-4">
+                                        <small class="text-muted d-block">Ganancia (@porcentajeActual%)</small>
+                                        <strong class="text-success" id="ganancia-ejemplo">+$@((50000 * porcentajeActual / 100).ToString("N0"))</strong>
+                                    </div>
+                                    <div class="col-4">
+                                        <small class="text-muted d-block">Precio Venta</small>
+                                        <strong class="text-primary" id="precio-venta-ejemplo">$@((50000 + (50000 * porcentajeActual / 100)).ToString("N0"))</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tags me-2"></i>Márgenes Sugeridos por Categoría</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button class="btn btn-outline-secondary btn-sm margen-sugerido" data-margen="15">15% - Premium</button>
+                            <button class="btn btn-outline-secondary btn-sm margen-sugerido" data-margen="20">20% - Estándar</button>
+                            <button class="btn btn-outline-secondary btn-sm margen-sugerido" data-margen="25">25% - Competitivo</button>
+                            <button class="btn btn-outline-secondary btn-sm margen-sugerido" data-margen="30">30% - Alto</button>
+                            <button class="btn btn-outline-secondary btn-sm margen-sugerido" data-margen="40">40% - Especial</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información Importante</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Los cambios solo afectan futuras compras</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Productos existentes mantienen su precio actual</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Se aplica automáticamente al completar compras</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Puedes modificar el porcentaje cuando desees</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instrucciones de Uso -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-question-circle me-2"></i>¿Cómo usar el Sistema de Margen de Ganancias?
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">1</div>
+                    <h6>Configurar Margen</h6>
+                    <p class="text-muted">Ajusta el porcentaje de ganancia que deseas aplicar automáticamente a todos los productos.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-warning text-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">2</div>
+                    <h6>Crear Compras</h6>
+                    <p class="text-muted">Registra las compras a proveedores con los precios reales que pagaste por cada producto.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;">3</div>
+                    <h6>Completar Compra</h6>
+                    <p class="text-muted">Al marcar la compra como "Completada", el sistema calculará automáticamente los precios de venta.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success mt-4">
+            <i class="fas fa-magic me-2"></i>
+            <strong>¡Automático!</strong> Una vez configurado, ya no necesitas calcular precios manualmente. 
+            El sistema se encarga de todo cuando completes tus compras.
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h6><i class="fas fa-example me-2"></i>Ejemplo Práctico:</h6>
+                <div class="bg-light p-3 rounded">
+                    <p class="mb-2">?? <strong>Compras whisky a $80.000</strong></p>
+                    <p class="mb-2">?? <strong>Margen configurado: 25%</strong></p>
+                    <p class="mb-2">?? <strong>Sistema calcula: $80.000 + 25% = $100.000</strong></p>
+                    <p class="mb-0">??? <strong>Los clientes verán: $100.000</strong></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-money-bill-wave me-2"></i>Beneficios del Sistema:</h6>
+                <ul class="list-unstyled">
+                    <li>?? Garantiza ganancia consistente</li>
+                    <li>? Ahorra tiempo en cálculos</li>
+                    <li>?? Reduce errores humanos</li>
+                    <li>?? Fácil ajuste de márgenes</li>
+                    <li>?? Proceso completamente automático</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Actualizar margen de ganancia
+            $('#margenGananciaForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const porcentaje = $('#porcentajeGanancia').val();
+                
+                if (!porcentaje || porcentaje < 0 || porcentaje > 200) {
+                    toastr.error('El porcentaje debe estar entre 0 y 200');
+                    return;
+                }
+                
+                const $btn = $(this).find('button[type="submit"]');
+                const originalText = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...');
+                
+                $.ajax({
+                    url: '@Url.Action("ActualizarMargenGanancia", "Configuracion")',
+                    type: 'POST',
+                    data: { porcentaje: porcentaje },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message, 'Configuración Actualizada', {
+                                timeOut: 3000
+                            });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Error al actualizar el margen de ganancia');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+            
+            // Actualizar ejemplo en tiempo real
+            $('#porcentajeGanancia').on('input', function() {
+                const porcentaje = parseFloat($(this).val()) || 0;
+                actualizarEjemplo(porcentaje);
+            });
+            
+            // Botones de margen sugerido
+            $('.margen-sugerido').click(function() {
+                const margen = $(this).data('margen');
+                $('#porcentajeGanancia').val(margen);
+                actualizarEjemplo(margen);
+                
+                // Highlight del botón seleccionado
+                $('.margen-sugerido').removeClass('btn-primary').addClass('btn-outline-secondary');
+                $(this).removeClass('btn-outline-secondary').addClass('btn-primary');
+                
+                toastr.info(`Margen sugerido aplicado: ${margen}%`, 'Sugerencia Aplicada');
+            });
+            
+            function actualizarEjemplo(porcentaje) {
+                const precioBase = 50000;
+                const ganancia = precioBase * porcentaje / 100;
+                const precioFinal = precioBase + ganancia;
+                
+                $('#ganancia-ejemplo').text('+$' + ganancia.toLocaleString('es-CO'));
+                $('#precio-venta-ejemplo').text('$' + precioFinal.toLocaleString('es-CO'));
+            }
+            
+            // Mostrar mensaje de bienvenida
+            toastr.info('Configura tu margen de ganancia y automatiza los precios de venta', 'Sistema de Margen Automático', {
+                timeOut: 4000
+            });
+        });
+    </script>
+}

@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Configuración del Sistema";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Configuración del Sistema - Administradores
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">?? Herramientas de Configuración</h5>
+                        <p class="mb-0">
+                            Utiliza estas herramientas para gestionar los usuarios administradores del sistema.
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        Crear Admin Personal
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Crea un usuario administrador con tu email personal:</p>
+                                    <ul class="mb-3">
+                                        <li><strong>Email:</strong> jhonnierhr08@gmail.com</li>
+                                        <li><strong>Contraseña:</strong> Admin123!</li>
+                                        <li><strong>Rol:</strong> Administrador</li>
+                                    </ul>
+                                    
+                                    <button id="createAdminBtn" class="btn btn-success w-100">
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        Crear Administrador Personal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-list me-2"></i>
+                                        Listar Administradores
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Ver todos los usuarios administradores existentes:</p>
+                                    <ul class="mb-3">
+                                        <li>Ver emails de administradores</li>
+                                        <li>Verificar credenciales</li>
+                                        <li>Fechas de creación</li>
+                                    </ul>
+                                    
+                                    <button id="listAdminsBtn" class="btn btn-info w-100">
+                                        <i class="fas fa-list me-2"></i>
+                                        Ver Administradores
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Área de resultados -->
+                    <div class="mt-4">
+                        <div id="results" class="d-none">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">?? Resultados</h5>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="resultContent" class="mb-0"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instrucciones -->
+                    <div class="mt-4">
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">?? Importante</h6>
+                            <ul class="mb-0">
+                                <li>Una vez creado el administrador personal, podrás iniciar sesión con <strong>jhonnierhr08@gmail.com</strong></li>
+                                <li>La contraseña por defecto es <strong>Admin123!</strong></li>
+                                <li>Puedes cambiar la contraseña después de iniciar sesión</li>
+                                <li>Este controlador debe ser removido en producción por seguridad</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Inicio
+                </a>
+                <a href="/Account/Login" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Ir a Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('createAdminBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+            
+            fetch('/Setup/CreatePersonalAdmin')
+                .then(response => response.json())
+                .then(data => {
+                    showResult(data);
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-user-plus me-2"></i>Crear Administrador Personal';
+                })
+                .catch(error => {
+                    showResult({ Success: false, Message: 'Error de conexión: ' + error.message });
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-user-plus me-2"></i>Crear Administrador Personal';
+                });
+        });
+
+        document.getElementById('listAdminsBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Consultando...';
+            
+            fetch('/Setup/ListAdmins')
+                .then(response => response.json())
+                .then(data => {
+                    showResult(data);
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-list me-2"></i>Ver Administradores';
+                })
+                .catch(error => {
+                    showResult({ Success: false, Message: 'Error de conexión: ' + error.message });
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-list me-2"></i>Ver Administradores';
+                });
+        });
+
+        function showResult(data) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.textContent = JSON.stringify(data, null, 2);
+            resultsDiv.classList.remove('d-none');
+            
+            // Scroll hacia los resultados
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+}

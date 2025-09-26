@@ -223,9 +223,8 @@ namespace Licorera.Controllers
             }
 
             compra.Estado = nuevoEstado;
-            await _context.SaveChangesAsync();
 
-            // Si la compra se completa, actualizar stock
+            // Si la compra se completa, actualizar stock y precios con margen de ganancia
             if (nuevoEstado == "Completada")
             {
                 var detalles = await _context.DetalleCompras
@@ -233,15 +232,78 @@ namespace Licorera.Controllers
                     .Where(dc => dc.CompraId == compraId)
                     .ToListAsync();
 
+                // Obtener margen de ganancia configurado
+                var margenGanancia = await ObtenerMargenGanancia();
+                var productosActualizados = new List<string>();
+
                 foreach (var detalle in detalles)
                 {
+                    // Actualizar stock
                     detalle.Producto.Stock += detalle.Cantidad;
+                    
+                    // Comentado temporalmente hasta que se agregue la columna PrecioCompra
+                    // detalle.Producto.PrecioCompra = detalle.PrecioUnitario;
+                    
+                    // Calcular nuevo precio de venta con margen de ganancia
+                    var nuevoPrecioVenta = detalle.PrecioUnitario + (detalle.PrecioUnitario * margenGanancia / 100);
+                    detalle.Producto.Precio = Math.Round(nuevoPrecioVenta, 0); // Redondear a peso entero
+                    
+                    // Actualizar fecha de modificación
+                    detalle.Producto.UpdatedAt = DateTime.Now;
+                    
+                    productosActualizados.Add($"{detalle.Producto.Nombre}: ${detalle.PrecioUnitario:N0} → ${detalle.Producto.Precio:N0}");
                 }
 
                 await _context.SaveChangesAsync();
-            }
 
-            return Json(new { success = true, message = $"Estado cambiado a {nuevoEstado}" });
+                var mensaje = $"Compra completada exitosamente. Stock actualizado y precios recalculados con margen del {margenGanancia}%. " +
+                             $"Productos actualizados: {productosActualizados.Count}";
+                
+                return Json(new { 
+                    success = true, 
+                    message = mensaje,
+                    margenAplicado = margenGanancia,
+                    productosActualizados = productosActualizados
+                });
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = $"Estado cambiado a {nuevoEstado}" });
+            }
+        }
+
+        private async Task<decimal> ObtenerMargenGanancia()
+        {
+            try
+            {
+                var configuracion = await _context.ConfiguracionSistema
+                    .FirstOrDefaultAsync(c => c.Clave == "MARGEN_GANANCIA");
+
+                if (configuracion != null && decimal.TryParse(configuracion.Valor, out decimal margen))
+                {
+                    return margen;
+                }
+
+                // Si no existe configuración, crear una con valor por defecto del 20%
+                var nuevaConfiguracion = new ConfiguracionSistema
+                {
+                    Clave = "MARGEN_GANANCIA",
+                    Valor = "20",
+                    Descripcion = "Porcentaje de ganancia aplicado automáticamente a los precios de venta",
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.ConfiguracionSistema.Add(nuevaConfiguracion);
+                await _context.SaveChangesAsync();
+
+                return 20m;
+            }
+            catch (Exception)
+            {
+                // Si hay error con la base de datos, usar valor por defecto
+                return 20m; // Valor por defecto 20%
+            }
         }
 
         // GET: Compras/Delete/5

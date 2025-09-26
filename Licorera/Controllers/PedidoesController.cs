@@ -23,7 +23,9 @@ namespace Licorera.Controllers
         // GET: Pedidoes
         public async Task<IActionResult> Index()
         {
+            // Solo mostrar pedidos que NO han sido eliminados por admin
             var pedidos = await _context.Pedidos
+                .Where(p => !p.EliminadoPorAdmin)
                 .Include(p => p.Cliente)
                 .Include(p => p.DetallePedidos)
                     .ThenInclude(d => d.Producto)
@@ -53,6 +55,7 @@ namespace Licorera.Controllers
             }
 
             var pedido = await _context.Pedidos
+                .Where(p => !p.EliminadoPorAdmin)
                 .Include(p => p.Cliente)
                 .Include(p => p.DetallePedidos)
                     .ThenInclude(d => d.Producto)
@@ -184,6 +187,7 @@ namespace Licorera.Controllers
             }
 
             var pedido = await _context.Pedidos
+                .Where(p => !p.EliminadoPorAdmin)
                 .Include(p => p.Cliente)
                 .Include(p => p.DetallePedidos)
                     .ThenInclude(d => d.Producto)
@@ -204,17 +208,23 @@ namespace Licorera.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var pedido = await _context.Pedidos
-                .Include(p => p.DetallePedidos)
-                .FirstOrDefaultAsync(p => p.PedidoId == id);
+                .FirstOrDefaultAsync(p => p.PedidoId == id && !p.EliminadoPorAdmin);
                 
             if (pedido != null)
             {
-                // Remove details first
-                _context.DetallePedidos.RemoveRange(pedido.DetallePedidos);
-                _context.Pedidos.Remove(pedido);
+                // En lugar de eliminar físicamente, marcar como eliminado por admin
+                pedido.EliminadoPorAdmin = true;
+                
+                // Opcionalmente, cambiar el estado a "Eliminado" para mayor claridad
+                if (pedido.Estado != "Cancelado")
+                {
+                    pedido.Estado = "Eliminado";
+                }
+                
+                _context.Update(pedido);
                 await _context.SaveChangesAsync();
                 
-                TempData["SuccessMessage"] = "Pedido eliminado exitosamente.";
+                TempData["SuccessMessage"] = "Pedido eliminado exitosamente. El cliente aún puede verlo en su historial.";
             }
             else
             {
@@ -228,7 +238,9 @@ namespace Licorera.Controllers
         [HttpPost]
         public async Task<IActionResult> ActualizarEstado(int pedidoId, string nuevoEstado)
         {
-            var pedido = await _context.Pedidos.FindAsync(pedidoId);
+            var pedido = await _context.Pedidos
+                .FirstOrDefaultAsync(p => p.PedidoId == pedidoId && !p.EliminadoPorAdmin);
+                
             if (pedido == null)
             {
                 return Json(new { success = false, message = "Pedido no encontrado" });
@@ -253,7 +265,7 @@ namespace Licorera.Controllers
 
         private bool PedidoExists(int id)
         {
-            return _context.Pedidos.Any(e => e.PedidoId == id);
+            return _context.Pedidos.Any(e => e.PedidoId == id && !e.EliminadoPorAdmin);
         }
     }
 }
